@@ -1,8 +1,10 @@
-import { Model, Table, Column, DataType } from 'sequelize-typescript';
+import { Model, Table, Column, DataType, ForeignKey } from 'sequelize-typescript';
+import { Role } from 'src/role/role.model';
 
 interface UserCreate {
   name: string;
-  team: number;
+  email: string;
+  password: string;
 }
 
 @Table({ tableName: 'user', timestamps: false })
@@ -26,4 +28,7 @@ export class User extends Model<User, UserCreate> {
 
   @Column({ type: DataType.STRING, allowNull: false })
   password: string;
+
+  @ForeignKey(() => Role)
+  roleId: number;
 }

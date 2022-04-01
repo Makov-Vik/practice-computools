@@ -5,6 +5,7 @@ import { ConfigModule } from '@nestjs/config';
 import { User } from './user/user.model';
 import { RoleModule } from './role/role.module';
 import { Role } from './role/role.model';
+import { TeamModule } from './team/team.module';
 
 @Module({
   controllers: [],
@@ -25,6 +26,7 @@ import { Role } from './role/role.model';
     }),
     UserModule,
     RoleModule,
+    TeamModule,
   ],
 })
 export class AppModule {}

@@ -1,5 +1,7 @@
-import { Model, Table, Column, DataType, ForeignKey } from 'sequelize-typescript';
+import { Model, Table, Column, DataType, ForeignKey, BelongsToMany } from 'sequelize-typescript';
 import { Role } from 'src/role/role.model';
+import { Team } from 'src/team/team.model';
+import { UserTeam } from 'src/team/user-team.model';
 
 interface UserCreate {
   name: string;
@@ -30,5 +32,9 @@ export class User extends Model<User, UserCreate> {
   password: string;
 
   @ForeignKey(() => Role)
+  @Column({ type: DataType.INTEGER })
   roleId: number;
+
+  @BelongsToMany(() => Team, () => UserTeam)
+  teams: Team[];
 }

@@ -1,5 +1,10 @@
-import { Model, Table, Column, DataType, BelongsToMany } from 'sequelize-typescript';
-import { Role } from 'src/role/role.model';
+import {
+  Model,
+  Table,
+  Column,
+  DataType,
+  BelongsToMany,
+} from 'sequelize-typescript';
 import { User } from 'src/user/user.model';
 import { UserTeam } from './user-team.model';
 

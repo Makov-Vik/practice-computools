@@ -1,4 +1,11 @@
-import { Model, Table, Column, DataType, ForeignKey, BelongsToMany } from 'sequelize-typescript';
+import {
+  Model,
+  Table,
+  Column,
+  DataType,
+  ForeignKey,
+  BelongsToMany,
+} from 'sequelize-typescript';
 import { Role } from 'src/role/role.model';
 import { Team } from 'src/team/team.model';
 import { UserTeam } from 'src/team/user-team.model';
@@ -22,7 +29,7 @@ export class User extends Model<User, UserCreate> {
   @Column({ type: DataType.STRING, allowNull: false })
   name: string;
 
-  @Column({ type: DataType.STRING, unique: true, allowNull: false })
+  @Column({ type: DataType.STRING, /*unique: true,*/ allowNull: false })
   email: string;
 
   @Column({ type: DataType.STRING })
@@ -32,7 +39,7 @@ export class User extends Model<User, UserCreate> {
   password: string;
 
   @ForeignKey(() => Role)
-  @Column({ type: DataType.INTEGER })
+  //@Column({ type: DataType.INTEGER })
   roleId: number;
 
   @BelongsToMany(() => Team, () => UserTeam)

@@ -8,6 +8,7 @@ import { Role } from './role/role.model';
 import { TeamModule } from './team/team.module';
 import { Team } from './team/team.model';
 import { UserTeam } from './team/user-team.model';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   controllers: [],
@@ -29,6 +30,7 @@ import { UserTeam } from './team/user-team.model';
     UserModule,
     RoleModule,
     TeamModule,
+    AuthModule,
   ],
 })
 export class AppModule {}

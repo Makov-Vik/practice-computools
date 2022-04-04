@@ -13,4 +13,15 @@ const ENCODING_SALT = 7;
 
 const SAME_EMAIL = { message: 'user with same email already exist' };
 
-export { PRIMARY_KEY, WRONG_EMAIL_OR_PASS, ENCODING_SALT, SAME_EMAIL };
+const MUST_BE_STR = { message: 'must be string' };
+const RULE_PASS = { message: 'more than 4 but less than 22' };
+const WRONG_EMAIL = { message: 'wrong email' };
+export {
+  PRIMARY_KEY,
+  WRONG_EMAIL_OR_PASS,
+  ENCODING_SALT,
+  SAME_EMAIL,
+  MUST_BE_STR,
+  RULE_PASS,
+  WRONG_EMAIL,
+};

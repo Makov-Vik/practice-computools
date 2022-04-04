@@ -8,6 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { UserService } from 'src/user/user.service';
 import * as bcrypt from 'bcryptjs';
+import { WRONG_EMAIL_OR_PASS, ENCODING_SALT, SAME_EMAIL } from 'src/constants';
 
 @Injectable()
 export class AuthService {
@@ -22,15 +23,12 @@ export class AuthService {
   }
 
   async registration(userDto: CreateUserDto) {
-    const condidate = await this.userService.getUserByEmail(userDto.email);
-    if (condidate) {
-      throw new HttpException(
-        'user eith same email already exist',
-        HttpStatus.BAD_REQUEST,
-      );
+    const candidate = await this.userService.getUserByEmail(userDto.email);
+    if (candidate) {
+      throw new HttpException(SAME_EMAIL, HttpStatus.BAD_REQUEST);
     }
 
-    const hashPassword = await bcrypt.hash(userDto.password, 7);
+    const hashPassword = await bcrypt.hash(userDto.password, ENCODING_SALT);
     const user = await this.userService.createUser({
       ...userDto,
       password: hashPassword,
@@ -51,13 +49,13 @@ export class AuthService {
 
   private async validateUser(userDto: CreateUserDto) {
     const user = await this.userService.getUserByEmail(userDto.email);
-    const passwordEqual = await bcrypt.compare(
-      userDto.password,
-      user ? user.password : '',
-    );
-    if (user && passwordEqual) {
-      return user;
+    if (!user) {
+      throw new UnauthorizedException(WRONG_EMAIL_OR_PASS);
     }
-    throw new UnauthorizedException({ message: 'wrong email or passord' });
+    const passwordEqual = await bcrypt.compare(userDto.password, user.password);
+    if (!passwordEqual) {
+      throw new UnauthorizedException(WRONG_EMAIL_OR_PASS);
+    }
+    return user;
   }
 }

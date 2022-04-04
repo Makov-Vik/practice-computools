@@ -7,15 +7,11 @@ import {
 } from 'sequelize-typescript';
 import { User } from 'src/user/user.model';
 import { Team } from './team.model';
+import { PRIMARY_KEY } from 'src/constants';
 
-@Table({ tableName: 'user-team', timestamps: false })
+@Table({ tableName: 'user-team' })
 export class UserTeam extends Model<UserTeam> {
-  @Column({
-    type: DataType.INTEGER,
-    unique: true,
-    autoIncrement: true,
-    primaryKey: true,
-  })
+  @Column(PRIMARY_KEY)
   id: number;
 
   @ForeignKey(() => User)

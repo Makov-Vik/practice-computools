@@ -12,15 +12,10 @@ export class UserService {
   ) {}
 
   async createUser(dto: CreateUserDto) {
-    const user = await this.userRepository.create(dto);
     const role = await this.roleService.getRoleByValue('player');
-    //await user.$set('roleId', role.id);  // whay $set not work ? change search 'player'
-    await this.userRepository.update(
-      { roleId: role.id },
-      { where: { id: user.id } },
-    );
-    //return user;
-    return this.userRepository.findOne({ where: { id: user.id } });
+    const dtoWithRole = { ...dto, roleId: role.id };
+
+    return await this.userRepository.create(dtoWithRole);
   }
 
   async getUserByEmail(email: string) {

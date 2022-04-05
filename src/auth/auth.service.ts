@@ -8,7 +8,15 @@ import { JwtService } from '@nestjs/jwt';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { UserService } from 'src/user/user.service';
 import * as bcrypt from 'bcryptjs';
-import { WRONG_EMAIL_OR_PASS, ENCODING_SALT, SAME_EMAIL } from 'src/constants';
+import {
+  WRONG_EMAIL_OR_PASS,
+  ENCODING_SALT,
+  SAME_EMAIL,
+  WRONG_EMAIL,
+} from 'src/constants';
+import { mailer } from 'src/nodemailer';
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 @Injectable()
 export class AuthService {
@@ -34,6 +42,30 @@ export class AuthService {
       password: hashPassword,
     });
     return this.generateToken(user);
+  }
+
+  async forgotPassword(dto) {
+    let user;
+    try {
+      user = await this.userService.getUserByEmail(dto.email);
+    } catch (e) {
+      console.log(e);
+      throw new UnauthorizedException(WRONG_EMAIL);
+    }
+
+    const token = (await this.generateToken(user)).token;
+    const forgotLink = `${process.env.LINK_HOME_PAGE}/auth/changePassword/${token}`;
+
+    const message = {
+      to: user.email,
+      subject: 'restore password',
+      text: '',
+      html: `
+      <h3>Hello ${user.name}!</h3>
+      <p>Please use this <a href="${forgotLink}">link</a> to reset your password.</p>
+  `,
+    };
+    mailer(message);
   }
 
   private async generateToken(user) {

@@ -1,8 +1,9 @@
 import { AppModule } from './app.module';
 import { NestFactory } from '@nestjs/core';
+import * as env from 'env-var';
 
 async function run() {
-  const PORT = process.env.PORT || 3000;
+  const PORT = env.get('PORT').required().asIntPositive() || 3000;
   const app = await NestFactory.create(AppModule);
 
   await app.listen(PORT, () => {

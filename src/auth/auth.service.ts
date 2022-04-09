@@ -16,6 +16,7 @@ import {
 } from 'src/constants';
 import { mailer } from 'src/nodemailer';
 import * as dotenv from 'dotenv';
+import * as env from 'env-var';
 import { User } from 'src/user/user.model';
 dotenv.config();
 
@@ -57,7 +58,7 @@ export class AuthService {
       throw {};
     }
     const token = (await this.generateToken(user)).token;
-    const forgotLink = `${process.env.LINK_HOME_PAGE}/auth/changePassword/${token}`;
+    const forgotLink = `${env.get('LINK_HOME_PAGE').asString()}/auth/changePassword/${token}`;
 
     const message = {
       to: user.email,

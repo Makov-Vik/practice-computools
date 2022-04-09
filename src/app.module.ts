@@ -9,6 +9,7 @@ import { TeamModule } from './team/team.module';
 import { Team } from './team/team.model';
 import { UserTeam } from './team/user-team.model';
 import { AuthModule } from './auth/auth.module';
+import * as env from 'env-var';
 
 @Module({
   controllers: [],
@@ -19,11 +20,11 @@ import { AuthModule } from './auth/auth.module';
     }),
     SequelizeModule.forRoot({
       dialect: 'postgres',
-      host: process.env.POSTGRES_HOST,
-      port: Number(process.env.POSTGRES_PORT),
-      username: process.env.POSTGRES_USER,
-      password: process.env.POSTGRES_PASSWORD,
-      database: process.env.POSTGRES_DB,
+      host: env.get('POSTGRES_HOST').asString(),
+      port: env.get('POSTGRES_PORT').required().asIntPositive(),
+      username: env.get('POSTGRES_USER').asString(),
+      password: env.get('POSTGRES_PASSWORD').asString(),
+      database: env.get('POSTGRES_DB').asString(),
       models: [User, Role, Team, UserTeam],
       autoLoadModels: true,
     }),

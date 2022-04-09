@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { ENCODING_SALT, NOT_FOUND, WRONG_EMAIL } from 'src/constants';
+import { ENCODING_SALT, NOT_FOUND, ROLE, WRONG_EMAIL } from 'src/constants';
 import { RoleService } from 'src/role/role.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './user.model';
@@ -17,8 +17,10 @@ export class UserService {
   ) {}
 
   async createUser(dto: CreateUserDto) {
-    // enum plauer
-    const role = await this.roleService.getRoleByValue('player');
+    const role = await this.roleService.getRoleByValue(ROLE[ROLE.player]);
+    if(!role) {
+      throw {}; // change error
+    }
     const dtoWithRole = { ...dto, roleId: role.id };
 
     return await this.userRepository.create(dtoWithRole);

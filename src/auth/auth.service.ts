@@ -16,6 +16,7 @@ import {
 } from 'src/constants';
 import { mailer } from 'src/nodemailer';
 import * as dotenv from 'dotenv';
+import { User } from 'src/user/user.model';
 dotenv.config();
 
 @Injectable()
@@ -44,15 +45,17 @@ export class AuthService {
     return this.generateToken(user);
   }
 
-  async forgotPassword(dto) {
+  async forgotPassword(dto: CreateUserDto) {
     let user;
     try {
       user = await this.userService.getUserByEmail(dto.email);
     } catch (e) {
-      console.log(e);
       throw new UnauthorizedException(WRONG_EMAIL);
     }
 
+    if (!user) {
+      throw {};
+    }
     const token = (await this.generateToken(user)).token;
     const forgotLink = `${process.env.LINK_HOME_PAGE}/auth/changePassword/${token}`;
 
@@ -68,7 +71,7 @@ export class AuthService {
     mailer(message);
   }
 
-  private async generateToken(user) {
+  private async generateToken(user: User) {
     const payload = {
       id: user.id,
       email: user.email,

@@ -5,7 +5,7 @@ dotenv.config();
 const transporter = nodemailer.createTransport(
   {
     host: process.env.MAIL_HOST,
-    port: process.env.MAIL_PORT,
+    port: Number(process.env.MAIL_PORT),
     secure: false,
     auth: {
       user: process.env.MAIL_USER,
@@ -17,8 +17,8 @@ const transporter = nodemailer.createTransport(
   },
 );
 
-const mailer = (message) => {
-  transporter.sendMail(message, (err, info) => {
+const mailer = (message: { to: string; subject: string; text: string; html: string; }) => {
+  transporter.sendMail(message, (err: Error) => {
     if (err) {
       return console.log(err);
     }

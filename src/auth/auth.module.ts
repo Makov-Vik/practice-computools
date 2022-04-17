@@ -11,7 +11,7 @@ import * as env from 'env-var';
   imports: [
     forwardRef(() => UserModule),
     JwtModule.register({
-      secret: env.get('PRIVATE_KEY').asString() || 'SOME_MSG',
+      secret: env.get('PRIVATE_KEY').default('SOME_MSG').required().asString(),
       signOptions: {
         expiresIn: '24h',
       },

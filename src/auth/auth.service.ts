@@ -13,6 +13,7 @@ import {
   ENCODING_SALT,
   SAME_EMAIL,
   WRONG_EMAIL,
+  USER_NOT_FOUND,
 } from 'src/constants';
 import { mailer } from 'src/nodemailer';
 import * as dotenv from 'dotenv';
@@ -47,18 +48,15 @@ export class AuthService {
   }
 
   async forgotPassword(dto: CreateUserDto) {
-    let user;
-    try {
-      user = await this.userService.getUserByEmail(dto.email);
-    } catch (e) {
-      throw new UnauthorizedException(WRONG_EMAIL);
-    }
+    const user = await this.userService.getUserByEmail(dto.email).catch(_e => {
+      throw new UnauthorizedException(WRONG_EMAIL)
+    })
 
     if (!user) {
-      throw {};
+      throw new UnauthorizedException(USER_NOT_FOUND);
     }
-    const token = (await this.generateToken(user)).token;
-    const forgotLink = `${env.get('LINK_HOME_PAGE').asString()}/auth/changePassword/${token}`;
+    const { token } = await this.generateToken(user);
+    const forgotLink = `${env.get('LINK_HOME_PAGE').required().asString()}/auth/changePassword/${token}`;
 
     const message = {
       to: user.email,

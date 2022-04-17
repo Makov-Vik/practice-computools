@@ -18,6 +18,9 @@ const RULE_PASS = { message: 'more than 4 but less than 22' };
 const WRONG_EMAIL = { message: 'wrong email' };
 const NOT_FOUND = { message: 'page not found'};
 const NOT_AUTHORIZED = { message: 'user is not authorized' }
+const MORE4LESS22 = { message: 'more than 4 but less than 22' }
+const USER_NOT_FOUND = { message: 'user not found'}
+const ROLE_USER_NOT_FOUND = { message: "there isn't user role"}
 enum ROLE {
   admin = 1,
   player = 2,
@@ -33,5 +36,8 @@ export {
   WRONG_EMAIL,
   NOT_FOUND,
   NOT_AUTHORIZED,
+  MORE4LESS22,
+  USER_NOT_FOUND,
+  ROLE_USER_NOT_FOUND,
   ROLE
 };

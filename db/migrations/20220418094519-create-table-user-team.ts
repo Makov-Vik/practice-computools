@@ -10,17 +10,9 @@ export const up = async (queryInterface: QueryInterface, Sequelize: Sequelize_mi
     },
     userId: {
       type: Sequelize.INTEGER,
-      // references: {
-      //   model: 'user',
-      //   key: 'id'
-      // },
     },
     teamId: {
       type: Sequelize.INTEGER,
-      // references: {
-      //   model: 'team',
-      //   key: 'id'
-      // },
     },
 
     createdAt: {

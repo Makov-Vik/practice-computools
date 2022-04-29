@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
-import { Role } from 'src/auth/checkRole.decorator';
-import { RoleGuard } from 'src/auth/role.guard';
+import { Role } from '../auth/checkRole.decorator';
+import { RoleGuard } from '../auth/role.guard';
 import { LogDto } from './dto/log.dto';
 import { LogInterface } from './log.interface';
 import { LogService } from './log.service';

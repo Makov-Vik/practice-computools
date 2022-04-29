@@ -3,7 +3,7 @@ import { LogService } from './log.service';
 import { LogController } from './log.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { LogSchema } from './log.model';
-import { AuthModule } from 'src/auth/auth.module';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   providers: [LogService],

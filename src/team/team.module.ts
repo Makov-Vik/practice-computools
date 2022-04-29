@@ -3,7 +3,7 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import { TeamService } from './team.service';
 import { TeamController } from './team.controller';
 import { Team } from './team.model';
-import { User } from 'src/user/user.model';
+import { User } from '../user/user.model';
 import { UserTeam } from './user-team.model';
 
 @Module({

@@ -3,7 +3,7 @@ import {Sequelize_migration} from "../util/inteface";
 
 
 export const up = async (queryInterface: QueryInterface, Sequelize: Sequelize_migration) => {
-    await queryInterface.createTable('notification', {
+    await queryInterface.createTable('request', {
       id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
@@ -17,9 +17,13 @@ export const up = async (queryInterface: QueryInterface, Sequelize: Sequelize_mi
       },
       status: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: false,
+        defaultValue: 'decline'
       },
       type: {
+        type: Sequelize.STRING,
+      },
+      description: {
         type: Sequelize.STRING,
       },
       createdAt: {

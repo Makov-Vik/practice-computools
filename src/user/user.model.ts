@@ -6,10 +6,10 @@ import {
   ForeignKey,
   BelongsToMany,
 } from 'sequelize-typescript';
-import { Role } from 'src/role/role.model';
-import { Team } from 'src/team/team.model';
-import { UserTeam } from 'src/team/user-team.model';
-import { PRIMARY_KEY } from 'src/constants';
+import { Role } from '../role/role.model';
+import { Team } from '../team/team.model';
+import { UserTeam } from '../team/user-team.model';
+import { PRIMARY_KEY } from '../constants';
 
 interface UserCreate {
   name: string;

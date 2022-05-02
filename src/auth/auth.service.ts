@@ -5,8 +5,8 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { CreateUserDto } from 'src/user/dto/create-user.dto';
-import { UserService } from 'src/user/user.service';
+import { CreateUserDto } from '../user/dto/create-user.dto';
+import { UserService } from '../user/user.service';
 import * as bcrypt from 'bcryptjs';
 import {
   WRONG_EMAIL_OR_PASS,
@@ -14,11 +14,11 @@ import {
   SAME_EMAIL,
   WRONG_EMAIL,
   USER_NOT_FOUND,
-} from 'src/constants';
-import { mailer } from 'src/nodemailer';
+} from '../constants';
+import { mailer } from '../nodemailer';
 import * as dotenv from 'dotenv';
 import * as env from 'env-var';
-import { User } from 'src/user/user.model';
+import { User } from '../user/user.model';
 dotenv.config();
 
 @Injectable()
@@ -75,6 +75,7 @@ export class AuthService {
       id: user.id,
       email: user.email,
       roleId: user.roleId,
+      pathPhoto: user.pathPhoto
     };
     return {
       token: this.jwtService.sign(payload),

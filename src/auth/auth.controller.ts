@@ -1,9 +1,9 @@
 import { Body, Controller, Get, Param, Patch, Post, UseGuards, UsePipes } from '@nestjs/common';
-import { CreateUserDto } from 'src/user/dto/create-user.dto';
+import { CreateUserDto } from '../user/dto/create-user.dto';
 import { AuthService } from './auth.service';
-import { ValidationPipe } from 'src/pipes/validation.pipe';
+import { ValidationPipe } from '../pipe/validation.pipe';
 import { JwtAuthGuard } from './jwt-auth.guard';
-import { UserService } from 'src/user/user.service';
+import { UserService } from '../user/user.service';
 
 @Controller('auth')
 export class AuthController {
@@ -24,11 +24,6 @@ export class AuthController {
   @Post('/forgotPassword')
   async forgotPassword(@Body() dto: CreateUserDto) {
     return this.authService.forgotPassword(dto);
-  }
-
-  @Get('/changePassword/:token')
-  async getPage() {
-    return 'space for new password';
   }
 
   @Patch('/changePassword/:token')

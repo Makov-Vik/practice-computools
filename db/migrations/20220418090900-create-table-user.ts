@@ -35,6 +35,13 @@ export const up = async (queryInterface: QueryInterface, Sequelize: Sequelize_mi
     teams: {
       type: Sequelize.INTEGER
     },
+    ban: {
+      type: Sequelize.BOOLEAN,
+      defaultValue: false
+    },
+    banReason: {
+      type: Sequelize.STRING
+    },
     createdAt: {
       type: Sequelize.DATE,
       allowNull: false,
@@ -47,6 +54,6 @@ export const up = async (queryInterface: QueryInterface, Sequelize: Sequelize_mi
   })
 };
 
-export const down = async (queryInterface: QueryInterface, _Sequelize: any) => {
+export const down = async (queryInterface: QueryInterface, _Sequelize: Sequelize_migration) => {
   await queryInterface.dropTable('user', {});
 }

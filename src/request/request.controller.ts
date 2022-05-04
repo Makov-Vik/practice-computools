@@ -15,10 +15,10 @@ export class RequestController {
     return this.requestService.acceptJoin(input) 
   }
   
-  @Post('live')
+  @Post('leave')
   @Role('manager')
   @UseGuards(RoleGuard)
-  acceptLive(@Body() input: Request) {
-    return this.requestService.acceptLive(input) 
+  acceptLeave(@Body() input: Request) {
+    return this.requestService.acceptLeave(input) 
   }
 }

@@ -1,6 +1,6 @@
 export class CreateRequsetDto {
-  readonly form?: number;
+  readonly from?: number;
   readonly to: number;
-  readonly status?: string;
-  readonly team: string;
+  readonly status?: number;
+  readonly team: number;
 }

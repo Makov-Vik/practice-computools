@@ -1,4 +1,4 @@
-import { MUST_BE_STR } from 'src/constants';
+import { MUST_BE_STR } from '../../constants';
 import { IsString } from 'class-validator';
 
 export class CreateRoleDto {

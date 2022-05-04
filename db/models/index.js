@@ -7,10 +7,15 @@ const basename = path.basename(__filename);
 const env = process.env.NODE_ENV || 'development';
 const config = require(__dirname + '/../../config/database.json')[env];
 const db = {};
+const env = require('env-var');
 
 let sequelize;
 if (config.use_env_variable) {
-  sequelize = new Sequelize(process.env[config.use_env_variable], config);
+  try {
+  sequelize = new Sequelize(env.get([config.use_env_variable]).required(), config);
+  } catch (e) {
+    console.log('error find env variable for migration', e);
+  }
 } else {
   sequelize = new Sequelize(config.database, config.username, config.password, config);
 }

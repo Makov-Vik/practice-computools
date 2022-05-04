@@ -75,7 +75,9 @@ export class AuthService {
       id: user.id,
       email: user.email,
       roleId: user.roleId,
-      pathPhoto: user.pathPhoto
+      pathPhoto: user.pathPhoto,
+      ban: user.ban,
+      banReason: user.banReason
     };
     return {
       token: this.jwtService.sign(payload),

@@ -10,21 +10,27 @@ export const up = async (queryInterface: QueryInterface, Sequelize: Sequelize_mi
         autoIncrement: true
       },
       from: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        references: {
+          model: 'user',
+          key: 'id'
+        },
       },
       to: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        references: {
+          model: 'user',
+          key: 'id'
+        },
       },
       status: {
-        type: Sequelize.STRING,
-        allowNull: false,
-        defaultValue: 'decline'
+        type: Sequelize.INTEGER
       },
       type: {
-        type: Sequelize.STRING,
+        type:  Sequelize.INTEGER
       },
       description: {
-        type: Sequelize.STRING,
+        type: Sequelize.STRING
       },
       createdAt: {
         type: Sequelize.DATE,
@@ -38,6 +44,6 @@ export const up = async (queryInterface: QueryInterface, Sequelize: Sequelize_mi
     })
 
   }
-export const down = async (queryInterface: QueryInterface, _Sequelize: any) => {
-  await queryInterface.dropTable('notification', {});
+export const down = async (queryInterface: QueryInterface, _Sequelize: Sequelize_migration) => {
+  await queryInterface.dropTable('request', {});
 }

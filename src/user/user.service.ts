@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { ENCODING_SALT, LOG_USER_CREATE, NOT_FOUND, ROLE, ROLE_USER_NOT_FOUND, SAME_EMAIL, USER_NOT_FOUND, WRONG_EMAIL } from '../constants';
+import { ENCODING_SALT, LOG_USER_CREATE, NOT_AUTHORIZED, NOT_FOUND, ROLE, ROLE_USER_NOT_FOUND, SAME_EMAIL, USER_NOT_FOUND, WRONG_EMAIL } from '../constants';
 import { RoleService } from '../role/role.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './user.model';
@@ -26,13 +26,13 @@ export class UserService {
     if(!role) {
       throw new HttpException(ROLE_USER_NOT_FOUND, HttpStatus.NOT_FOUND); 
     }
-    const dtoWithRole = { ...dto, roleId: role.id };
+    const dtoWithRole = { ...dto, roleId: role.id, ban: false, banReason: '' };
 
     // log to mongo
     const message = LOG_USER_CREATE.message.concat(`${dto.email}`);
     const log = {
       message: message,
-      where: 'user.servise.ts (22)',
+      where: 'user.servise.ts',
       type: 'create'
     }
     this.logService.create(log);
@@ -85,16 +85,16 @@ export class UserService {
         id: user.id
       }
     });
-    return "chahged success"
+    return "successfully modified"
   }
 
-  async getYourself(req: any) {
+  async getMe(req: any) {
     const user = await this.userRepository.findOne({ where: {id: req.user.id}, include: { all: true }} );
     if (!user) {
-      throw {} // may be replace to error
+      throw new UnauthorizedException(NOT_AUTHORIZED);
     }
-    const {name, email, roleId, pathPhoto, teams} = user;
-    return {name, email, roleId, pathPhoto, teams};
+    const {name, email, roleId, pathPhoto, teams, ban, banReason} = user;
+    return {name, email, roleId, pathPhoto, teams, ban, banReason};
   }
 
   async uploadImage(file: UploadImageDto, req: any) {
@@ -128,7 +128,7 @@ export class UserService {
     return user;
   }
 
-  async liveTeam(team: any, userId: number) {
+  async leaveTeam(team: any, userId: number) {
     const user = await this.userRepository.findOne({ where: {id: userId}, include: { all: true }} );
     if (!user){
       throw {}
@@ -146,4 +146,5 @@ export class UserService {
     user.$set('teams', teamsUpdate);
     return user;
   }
+
 }

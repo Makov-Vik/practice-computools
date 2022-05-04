@@ -11,6 +11,7 @@ import { UploadImageDto } from './dto/upload-image.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CreateRequsetDto } from 'src/request/dto/create-request.dto';
 import { RequestService } from 'src/request/request.service';
+import { RequsetDto } from 'src/request/dto/request.dto';
 
 @Controller('user')
 export class UserController {
@@ -29,9 +30,9 @@ export class UserController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('yourself')
-  getYourself(@Req() req: any) {
-    return this.userServise.getYourself(req);
+  @Get('me')
+  getMe(@Req() req: any) {
+    return this.userServise.getMe(req);
   }
 
   @Post('image')
@@ -55,24 +56,28 @@ export class UserController {
     return this.userServise.getImage(req, res);
   }
 
-  @Post('joinTeam')
-  @UseGuards(JwtAuthGuard)
-  requestJoinTeam(@Req() req: any, @Body() input: CreateRequsetDto) {
-    return this.requestService.requestJoinTeam(req, input);
-  }
-
   @UseGuards(JwtAuthGuard)
   @Get('myNotifications')
   getMyNotifications(@Req() req: any) {
     return this.requestService.getMyNotifications(req);
   }
 
-
-  
-  @Post('liveTeam')
+  @Post('joinTeam')
   @UseGuards(JwtAuthGuard)
-  requestLiveTeam(@Req() req: any, @Body() input: CreateRequsetDto) {
-    return this.requestService.requestLiveTeam(req, input);
+  requestJoinTeam(@Req() req: any, @Body() input: CreateRequsetDto) {
+    return this.requestService.requestJoinTeam(req, input);
+  }
+
+  @Post('leaveTeam')
+  @UseGuards(JwtAuthGuard)
+  requestLeaveTeam(@Req() req: any, @Body() input: CreateRequsetDto) {
+    return this.requestService.requestLeaveTeam(req, input);
+  }
+
+  @Post('cancelRequest')
+  @UseGuards(JwtAuthGuard)
+  cancelRequest(@Req() req: any, @Body() input: RequsetDto) {
+    return this.requestService.cancelRequest(req, input);
   }
 
 }

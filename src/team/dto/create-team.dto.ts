@@ -1,4 +1,5 @@
 export class CreateTeamDto {
-  readonly team: string;
+  readonly name: string;
   readonly description: string;
+  readonly headManager?: number;
 }

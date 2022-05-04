@@ -10,8 +10,9 @@ import { UserTeam } from './user-team.model';
 import { PRIMARY_KEY } from '../constants';
 
 interface TeamCreate {
-  team: string;
+  name: string;
   description: string;
+  headManager?: number;
 }
 
 @Table({ tableName: 'team' })

@@ -19,12 +19,9 @@ export const up = async (queryInterface: QueryInterface, Sequelize: Sequelize_mi
   });
 }
 
-export const down = async (queryInterface: QueryInterface, _Sequelize: any) => {
-  /**
-   * Add reverting commands here.
-   *
-   * Example:
-   * await queryInterface.dropTable('users');
-   */
+export const down = async (queryInterface: QueryInterface, Sequelize: Sequelize_migration) => {
+
+  await queryInterface.dropTable('team', {});
+  await queryInterface.dropTable('user', {});
 }
 

@@ -24,6 +24,6 @@ export const up = async (queryInterface: QueryInterface, Sequelize: Sequelize_mi
   })
 }
 
-export const down = async (queryInterface: QueryInterface, _Sequelize: any) => {
+export const down = async (queryInterface: QueryInterface, _Sequelize: Sequelize_migration) => {
   await queryInterface.dropTable('role', {});
 }

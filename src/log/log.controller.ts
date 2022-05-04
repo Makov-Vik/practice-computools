@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { Role } from '../auth/checkRole.decorator';
 import { RoleGuard } from '../auth/role.guard';
 import { LogDto } from './dto/log.dto';
@@ -7,6 +8,7 @@ import { LogService } from './log.service';
 
 
 @Controller('log')
+@UseGuards(JwtAuthGuard)
 @Role('admin')
 @UseGuards(RoleGuard)
 export class LogController {

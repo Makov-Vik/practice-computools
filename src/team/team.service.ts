@@ -1,5 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
+import { SAME_TEAM } from 'src/constants';
+import { User } from 'src/user/user.model';
 import { CreateTeamDto } from './dto/create-team.dto';
 import { Team } from './team.model';
 
@@ -7,13 +9,21 @@ import { Team } from './team.model';
 export class TeamService {
   constructor(@InjectModel(Team) private teamRepository: typeof Team) {}
 
-  async createTeam(dto: CreateTeamDto) {
-    const team = await this.teamRepository.create(dto);
-    return team;
+  async createTeam(dto: CreateTeamDto, req: any) {
+    const candidate = await this.getTeamByName(dto.name)
+    if(candidate) {
+      throw new HttpException(SAME_TEAM, HttpStatus.BAD_REQUEST);
+    }
+    return await this.teamRepository.create({ ...dto, headManager: req.user.id});
   }
 
   async getTeamByName(name: string) {
-    const team = await this.teamRepository.findOne({ where: { name } });
-    return team;
+
+    // delete field 'password' in column users ............................................
+    return await this.teamRepository.findOne({ where: { name }, include: {all: true} });
+  }
+
+  async getTeams() {
+    return await this.teamRepository.findAll();
   }
 }

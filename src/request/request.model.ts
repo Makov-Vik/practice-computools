@@ -22,11 +22,11 @@ export class Request extends Model<Request, CreateRequest> {
   id: number;
 
   @ForeignKey(() => User)
-  @Column({ type: DataType.NUMBER })
+  @Column({ type: DataType.NUMBER, allowNull: false })
   from: number;
 
   @ForeignKey(() => User)
-  @Column({ type: DataType.NUMBER })
+  @Column({ type: DataType.NUMBER, allowNull: false })
   to: number;
 
   @Column({ type: DataType.NUMBER, defaultValue: RequestStatus.pending})

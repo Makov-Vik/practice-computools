@@ -11,6 +11,7 @@ export const up = async (queryInterface: QueryInterface, Sequelize: Sequelize_mi
       },
       from: {
         type: Sequelize.INTEGER,
+        allowNull: false,
         references: {
           model: 'user',
           key: 'id'
@@ -18,6 +19,7 @@ export const up = async (queryInterface: QueryInterface, Sequelize: Sequelize_mi
       },
       to: {
         type: Sequelize.INTEGER,
+        allowNull: false,
         references: {
           model: 'user',
           key: 'id'

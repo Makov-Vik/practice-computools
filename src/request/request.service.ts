@@ -4,7 +4,7 @@ import { CreateRequsetDto } from './dto/create-request.dto';
 import { Request } from './request.model';
 import { mailer } from '../nodemailer';
 import { UserService } from 'src/user/user.service';
-import { ACCESS_APPROVE, ACCESS_CANCELED, ACCESS_LEAVE, MESSAGE, NO_SUCH_REQ, NO_SUCH_TEAM, RECIPIENT_NOT_FOUND, RequestStatus, RequestType, REQUEST_CANCELED, REQUEST_MESSAGE, REQUEST_NOT_FOUND, REQUEST_WAS_APPROVED, REQUEST_WAS_DECLINE, RESENDING } from 'src/constants';
+import { ACCESS_APPROVE, ACCESS_CANCELED, ACCESS_LEAVE, FAIL_WRITE_DB, MESSAGE, NO_SUCH_REQ, NO_SUCH_TEAM, RECIPIENT_NOT_FOUND, RequestStatus, RequestType, REQUEST_CANCELED, REQUEST_MESSAGE, REQUEST_NOT_FOUND, REQUEST_WAS_APPROVED, REQUEST_WAS_DECLINE, RESENDING } from 'src/constants';
 import { TeamService } from 'src/team/team.service';
 import { User } from 'src/user/user.model';
 import { RequsetDto } from './dto/request.dto';
@@ -43,12 +43,18 @@ export class RequestService {
         html: `<p>${description}</p>`
       });
 
-      return await this.requestRepository.create({ 
+      try {
+        return await this.requestRepository.create({ 
         ...REQUEST_MESSAGE,
         from: req.user.id,
         to: input.to,
         description: description,
-      });
+        });
+      } catch(e) {
+        console.log(e)
+        throw new HttpException(FAIL_WRITE_DB, HttpStatus.INTERNAL_SERVER_ERROR)
+      }
+
     }
     return new HttpException(RESENDING, HttpStatus.BAD_REQUEST)
 

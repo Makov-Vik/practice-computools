@@ -9,7 +9,10 @@ export const up = async (queryInterface: QueryInterface, Sequelize: Sequelize_mi
       primaryKey: true,
       autoIncrement: true
     },
-    role: Sequelize.STRING,
+    role: {
+      type: Sequelize.STRING,
+      allowNull: false
+    },
     description: Sequelize.STRING,
     
     createdAt: {

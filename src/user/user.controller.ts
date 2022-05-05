@@ -12,6 +12,8 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CreateRequsetDto } from 'src/request/dto/create-request.dto';
 import { RequestService } from 'src/request/request.service';
 import { RequsetDto } from 'src/request/dto/request.dto';
+import { BanDto } from './dto/ban.dto';
+import { Role } from '../auth/checkRole.decorator';
 
 @Controller('user')
 export class UserController {
@@ -80,4 +82,10 @@ export class UserController {
     return this.requestService.cancelRequest(req, input);
   }
 
+  @Patch('ban')
+  @Role('admin', 'manager')
+  @UseGuards(JwtAuthGuard)
+  ban(@Req() req: any, @Body() input: BanDto) {
+    return this.userServise.ban(req, input);
+  }
 }

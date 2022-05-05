@@ -29,12 +29,16 @@ const RESENDING = { message: 'retry send request' };
 const REQUEST_CANCELED = { message: 'request has been canceled' };
 const REQUEST_WAS_APPROVED = { message: 'the request has already been approved'};
 const REQUEST_WAS_DECLINE = { message: 'the request has already been decline'};
-const ACCESS_CANCELED = {message: 'access canceled'};
-const ACCESS_LEAVE = {message: 'access leave'};
-const ACCESS_APPROVE = {message: 'access approve'}
-const NO_ACCESS = { message: 'No access'};
+const ACCESS_CANCELED = { message: 'access canceled'};
+const ACCESS_LEAVE = { message: 'access leave'};
+const ACCESS_APPROVE = { message: 'access approve'};
+const NO_ACCESS = { message: 'no access'};
+const NO_SUCH_REQ = { message: 'no such request'};
+const NO_SUCH_TEAM = { message: 'no such team'};
+const SUCCESS = {message: 'operation success'};
+const FAIL_WRITE_DB = { message: 'failed write to database'};
 
-const LOG_USER_CREATE = { message: "created user: "}
+const LOG_USER_CREATE = { message: "created user: "};
 
 const MESSAGE = {
   subject: 'confirm join',
@@ -45,18 +49,18 @@ enum ROLE {
   admin = 1,
   player = 2,
   manager = 3,
-}
+};
 
 enum RequestStatus {
   approve = 1,
   decline = 2,
   pending = 3,
   canceled = 4
-}
+};
 enum RequestType {
   join = 1,
   leave = 2,
-}
+};
 
 export {
   PRIMARY_KEY,
@@ -84,6 +88,10 @@ export {
   REQUEST_WAS_DECLINE,
   VALIDATION,
   MESSAGE,
+  NO_SUCH_REQ,
+  NO_SUCH_TEAM,
+  SUCCESS,
+  FAIL_WRITE_DB,
   ROLE,
   RequestStatus,
   RequestType

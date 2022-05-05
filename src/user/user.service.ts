@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { ENCODING_SALT, LOG_USER_CREATE, NOT_AUTHORIZED, NOT_FOUND, ROLE, ROLE_USER_NOT_FOUND, SAME_EMAIL, USER_NOT_FOUND, WRONG_EMAIL } from '../constants';
+import { ENCODING_SALT, FAIL_WRITE_DB, LOG_USER_CREATE, NOT_AUTHORIZED, NOT_FOUND, NO_ACCESS, ROLE, ROLE_USER_NOT_FOUND, SAME_EMAIL, SUCCESS, USER_NOT_FOUND, WRONG_EMAIL } from '../constants';
 import { RoleService } from '../role/role.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './user.model';
@@ -12,6 +12,7 @@ import { ChangeLoginDto } from './dto/change-login.dto';
 import { UploadImageDto } from './dto/upload-image.dto';
 import { includes } from 'lodash';
 import { Team } from 'src/team/team.model';
+import { BanDto } from './dto/ban.dto';
 dotenv.config();
 
 @Injectable()
@@ -22,7 +23,7 @@ export class UserService {
   ) {}
 
   async createUser(dto: CreateUserDto) {
-    const role = await this.roleService.getRoleByValue(ROLE[ROLE.manager]);
+    const role = await this.roleService.getRoleByValue(ROLE[ROLE.player]);
     if(!role) {
       throw new HttpException(ROLE_USER_NOT_FOUND, HttpStatus.NOT_FOUND); 
     }
@@ -116,8 +117,8 @@ export class UserService {
 
   async addToTeam(team: Team, userId: number) {
     const user = await this.userRepository.findOne({ where: {id: userId}, include: { all: true }} );
-    if (!user){
-      throw {}
+    if(!user) {
+      throw new HttpException(USER_NOT_FOUND, HttpStatus.NOT_FOUND); 
     }
 
     const teamsUpdate = user.teams;
@@ -130,8 +131,8 @@ export class UserService {
 
   async leaveTeam(team: any, userId: number) {
     const user = await this.userRepository.findOne({ where: {id: userId}, include: { all: true }} );
-    if (!user){
-      throw {}
+    if(!user) {
+      throw new HttpException(USER_NOT_FOUND, HttpStatus.NOT_FOUND); 
     }
     
     const teamsUpdate = user.teams;
@@ -147,4 +148,31 @@ export class UserService {
     return user;
   }
 
+  async ban(req: any, input: BanDto) {
+    const user = await this.userRepository.findByPk(input.userId);
+    if(!user) {
+      throw new HttpException(USER_NOT_FOUND, HttpStatus.NOT_FOUND); 
+    }
+    if (user.roleId === ROLE.admin) {
+      throw new HttpException(NO_ACCESS, HttpStatus.FORBIDDEN);
+    }
+
+    if(req.user.roleId === ROLE.manager && user.roleId === ROLE.manager){
+      throw new HttpException(NO_ACCESS, HttpStatus.FORBIDDEN);
+    }
+
+    user.ban = input.ban;
+    user.banReason = input.banReason;
+    
+    try {
+      await user.save(); 
+      return SUCCESS;
+    } catch (e) {
+      console.log(e);
+      throw new HttpException(FAIL_WRITE_DB, HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+
+
+    
+  }
 }

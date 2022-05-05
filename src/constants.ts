@@ -40,11 +40,6 @@ const FAIL_WRITE_DB = { message: 'failed write to database'};
 
 const LOG_USER_CREATE = { message: "created user: "};
 
-const MESSAGE = {
-  subject: 'confirm join',
-  text: '',
-};
-
 enum ROLE {
   admin = 1,
   player = 2,
@@ -60,6 +55,16 @@ enum RequestStatus {
 enum RequestType {
   join = 1,
   leave = 2,
+};
+
+const REQUEST_MESSAGE = {
+  type: RequestType.join,
+  status: RequestStatus.pending,
+}
+
+const MESSAGE = {
+  subject: 'confirm join',
+  text: '',
 };
 
 export {
@@ -94,5 +99,6 @@ export {
   FAIL_WRITE_DB,
   ROLE,
   RequestStatus,
-  RequestType
+  RequestType,
+  REQUEST_MESSAGE
 };

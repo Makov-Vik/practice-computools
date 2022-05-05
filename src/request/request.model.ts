@@ -14,6 +14,7 @@ interface CreateRequest {
   readonly to: number;
   readonly status?: number;
   readonly type: number;
+  readonly description: string;
 }
 @Table({ tableName: 'request' })
 export class Request extends Model<Request, CreateRequest> {
@@ -24,17 +25,9 @@ export class Request extends Model<Request, CreateRequest> {
   @Column({ type: DataType.NUMBER })
   from: number;
 
-  // @BelongsTo(() => User, 'requestFrom')
-  // userFrom: User;
-
-
   @ForeignKey(() => User)
   @Column({ type: DataType.NUMBER })
   to: number;
-
-  // @BelongsTo(() => User, 'requestTo')
-  // userTo: User;
-
 
   @Column({ type: DataType.NUMBER, defaultValue: RequestStatus.pending})
   status: number;

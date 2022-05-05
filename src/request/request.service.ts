@@ -4,7 +4,7 @@ import { CreateRequsetDto } from './dto/create-request.dto';
 import { Request } from './request.model';
 import { mailer } from '../nodemailer';
 import { UserService } from 'src/user/user.service';
-import { ACCESS_APPROVE, ACCESS_CANCELED, ACCESS_LEAVE, MESSAGE, NO_SUCH_REQ, NO_SUCH_TEAM, RECIPIENT_NOT_FOUND, RequestStatus, RequestType, REQUEST_CANCELED, REQUEST_NOT_FOUND, REQUEST_WAS_APPROVED, REQUEST_WAS_DECLINE, RESENDING } from 'src/constants';
+import { ACCESS_APPROVE, ACCESS_CANCELED, ACCESS_LEAVE, MESSAGE, NO_SUCH_REQ, NO_SUCH_TEAM, RECIPIENT_NOT_FOUND, RequestStatus, RequestType, REQUEST_CANCELED, REQUEST_MESSAGE, REQUEST_NOT_FOUND, REQUEST_WAS_APPROVED, REQUEST_WAS_DECLINE, RESENDING } from 'src/constants';
 import { TeamService } from 'src/team/team.service';
 import { User } from 'src/user/user.model';
 import { RequsetDto } from './dto/request.dto';
@@ -30,27 +30,25 @@ export class RequestService {
       throw new HttpException(RECIPIENT_NOT_FOUND, HttpStatus.NOT_FOUND);
     }
     
-
-    const requestMessage = {
-      from: req.user.id,
-      to: input.to,
-      type: RequestType.join,
-      status: RequestStatus.pending,
-      description: `team: ${input.team} , player: ${req.user.email}`,
-    }
+    const description =  `team: ${input.team} , player: ${req.user.email}`;
 
     const requests = await this.requestRepository.findAll({ where: {
-      description: requestMessage.description, status: requestMessage.status ,type: requestMessage.type}
+      description: description, status: RequestStatus.pending ,type: RequestType.join}
     });
 
     if (requests.length === 0) {
       mailer({
         ...MESSAGE, 
         to: manager.email,
-        html: `<p>confirm joining team ${input.team} of player ${req.user.email}</p>`
+        html: `<p>${description}</p>`
       });
 
-      return await this.requestRepository.create(requestMessage);
+      return await this.requestRepository.create({ 
+        ...REQUEST_MESSAGE,
+        from: req.user.id,
+        to: input.to,
+        description: description,
+      });
     }
     return new HttpException(RESENDING, HttpStatus.BAD_REQUEST)
 
@@ -65,26 +63,25 @@ export class RequestService {
           throw new HttpException(RECIPIENT_NOT_FOUND, HttpStatus.NOT_FOUND);
         }
     
-        const requestMessage = {
-          from: req.user.id,
-          to: input.to,
-          type: RequestType.leave,
-          status: RequestStatus.pending,
-          description: `team: ${input.team} , player: ${req.user.email}`,
-        }
+        const description = `team: ${input.team} , player: ${req.user.email}`;
 
         const requests = await this.requestRepository.findAll({ where: {
-          description: requestMessage.description, status: requestMessage.status, type: requestMessage.type}
+          description: description, status: RequestStatus.pending, type: RequestType.leave}
         });
         
         if (requests.length === 0) {
           mailer({
             ...MESSAGE, 
             to: manager.email,
-            html: `<p>confirm leaving team ${input.team} of player ${req.user.email}</p>`
+            html: `<p>${description}</p>`
           });
     
-          return await this.requestRepository.create(requestMessage);
+          return await this.requestRepository.create({ 
+            ...REQUEST_MESSAGE,
+            from: req.user.id,
+            to: input.to,
+            description: description,
+          });
         }
         return new HttpException(RESENDING, HttpStatus.BAD_REQUEST)
   }

@@ -9,7 +9,7 @@ import {
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { Observable } from 'rxjs';
-import { NOT_AUTHORIZED, NO_ACCESS, ROLE } from '../constants';
+import { BAN, NOT_AUTHORIZED, NO_ACCESS, ROLE } from '../constants';
 import { ROLE_KEY } from './checkRole.decorator';
 
 @Injectable()
@@ -20,7 +20,7 @@ export class JwtAuthGuard implements CanActivate {
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
     const req = context.switchToHttp().getRequest();
-    //try {
+    
       const authHeader = req.headers.authorization;
       const bearer = authHeader.split(' ')[0].toLowerCase();
       const token = authHeader.split(' ')[1];
@@ -36,19 +36,16 @@ export class JwtAuthGuard implements CanActivate {
         context.getHandler(),
         context.getClass(),
       ])
-      if (!requiredRoles) {
-        return true
-      }
 
-      if (!requiredRoles.includes(ROLE[req.user.roleId])){
+      if (requiredRoles && !requiredRoles.includes(ROLE[req.user.roleId])){
         throw new HttpException(NO_ACCESS, HttpStatus.FORBIDDEN);
       }
       
+      // check ban
+      if (user.ban) {
+        throw new HttpException({ ...BAN, banReason: user.banReason}, HttpStatus.FORBIDDEN)
+      }
+
       return true;
-    // } catch (e) {
-    //   console.log(e);
-    //   return false
-    //   //throw new UnauthorizedException(NOT_AUTHORIZED);
-    // }
   }
 }

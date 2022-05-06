@@ -37,6 +37,7 @@ const NO_SUCH_REQ = { message: 'no such request'};
 const NO_SUCH_TEAM = { message: 'no such team'};
 const SUCCESS = {message: 'operation success'};
 const FAIL_WRITE_DB = { message: 'failed write to database'};
+const BAN = { message: "you got banned"};
 
 const LOG_USER_CREATE = { message: "created user: "};
 
@@ -100,5 +101,6 @@ export {
   ROLE,
   RequestStatus,
   RequestType,
-  REQUEST_MESSAGE
+  REQUEST_MESSAGE,
+  BAN
 };

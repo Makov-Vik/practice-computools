@@ -5,9 +5,9 @@ import {
   DataType,
   ForeignKey,
 } from 'sequelize-typescript';
-import { User } from 'src/user/user.model';
+import { User } from '../user/user.model';
 import { Team } from './team.model';
-import { PRIMARY_KEY } from 'src/constants';
+import { PRIMARY_KEY } from '../constants';
 
 @Table({ tableName: 'user-team' })
 export class UserTeam extends Model<UserTeam> {

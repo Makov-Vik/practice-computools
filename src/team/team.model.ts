@@ -5,13 +5,14 @@ import {
   DataType,
   BelongsToMany,
 } from 'sequelize-typescript';
-import { User } from 'src/user/user.model';
+import { User } from '../user/user.model';
 import { UserTeam } from './user-team.model';
-import { PRIMARY_KEY } from 'src/constants';
+import { PRIMARY_KEY } from '../constants';
 
 interface TeamCreate {
-  team: string;
+  name: string;
   description: string;
+  headManager?: number;
 }
 
 @Table({ tableName: 'team' })
@@ -24,6 +25,9 @@ export class Team extends Model<Team, TeamCreate> {
 
   @Column({ type: DataType.STRING })
   description: string;
+
+  @Column
+  headManager: number;
 
   @BelongsToMany(() => User, () => UserTeam)
   users: User[];

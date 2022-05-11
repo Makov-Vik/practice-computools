@@ -1,6 +1,6 @@
 import { Model, Table, Column, DataType, HasMany } from 'sequelize-typescript';
-import { User } from 'src/user/user.model';
-import { PRIMARY_KEY } from 'src/constants';
+import { User } from '../user/user.model';
+import { PRIMARY_KEY } from '../constants';
 
 interface RoleCreate {
   role: string;

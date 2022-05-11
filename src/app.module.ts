@@ -10,8 +10,10 @@ import { TeamModule } from './team/team.module';
 import { Team } from './team/team.model';
 import { UserTeam } from './team/user-team.model';
 import { AuthModule } from './auth/auth.module';
-import * as env from 'env-var';
 import { LogModule } from './log/log.module';
+import { RequestModule } from './request/request.module';
+import * as env from 'env-var';
+import { Request } from './request/request.model';
 
 @Module({
   controllers: [],
@@ -20,7 +22,7 @@ import { LogModule } from './log/log.module';
     ConfigModule.forRoot({
       envFilePath: '.env',
     }),
-    MongooseModule.forRoot('mongodb://user:password@localhost:27017/?authMechanism=DEFAULT&authSource=airsoft'),
+    MongooseModule.forRoot(env.get('MONGO_URI').required().asString()),
     SequelizeModule.forRoot({
       dialect: 'postgres',
       host: env.get('POSTGRES_HOST').required().asString(),
@@ -28,14 +30,16 @@ import { LogModule } from './log/log.module';
       username: env.get('POSTGRES_USER').required().asString(),
       password: env.get('POSTGRES_PASSWORD').required().asString(),
       database: env.get('POSTGRES_DB').required().asString(),
-      models: [User, Role, Team, UserTeam],
+      models: [User, Role, Team, UserTeam, Request],
       autoLoadModels: true,
+      synchronize: true,
     }),
     UserModule,
     RoleModule,
     TeamModule,
     AuthModule,
     LogModule,
+    RequestModule,
   ],
 })
 export class AppModule {}

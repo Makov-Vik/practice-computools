@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { ENCODING_SALT, FAIL_WRITE_DB, LOG_USER_CREATE, NOT_AUTHORIZED, NOT_FOUND, NO_ACCESS, ROLE, ROLE_USER_NOT_FOUND, SAME_EMAIL, SUCCESS, USER_NOT_FOUND, WRONG_EMAIL } from '../constants';
+import { ENCODING_SALT, FAIL_WRITE_DB, LOG_USER_CREATE, NOT_AUTHORIZED, NOT_FOUND, NO_ACCESS, NO_SUCH_TEAM, ROLE, ROLE_USER_NOT_FOUND, SAME_EMAIL, SUCCESS, USER_NOT_FOUND, WRONG_EMAIL } from '../constants';
 import { RoleService } from '../role/role.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './user.model';
@@ -13,6 +13,7 @@ import { UploadImageDto } from './dto/upload-image.dto';
 import { includes } from 'lodash';
 import { Team } from 'src/team/team.model';
 import { BanDto } from './dto/ban.dto';
+import { where } from 'sequelize/types';
 dotenv.config();
 
 @Injectable()
@@ -68,9 +69,9 @@ export class UserService {
     if(!user) {
       throw new HttpException(USER_NOT_FOUND, HttpStatus.NOT_FOUND); 
     }
-    const { id, name, email, pathPhoto, roleId, teams } = user;
-
-    return { id, name, email, pathPhoto, roleId, teams }
+    //const { id, name, email, pathPhoto, roleId, teams } = user;
+    //return { id, name, email, pathPhoto, roleId, teams }
+    return user;
   }
 
   async changeLogin(input: ChangeLoginDto, req: any) {
@@ -125,7 +126,7 @@ export class UserService {
     teamsUpdate.push(team);
 
     // why doesn't work .save() / $add() ????????????????????????????
-    user.$set('teams', teamsUpdate);
+    await user.$set('teams', teamsUpdate);
     return user;
   }
 
@@ -140,9 +141,11 @@ export class UserService {
     const indexTeam = teamsUpdate.findIndex((item => {
       return item.getDataValue('name') === team.getDataValue('name')
     }));
-    console.log(indexTeam);
+    if (indexTeam === -1) {
+      throw new HttpException(NO_SUCH_TEAM, HttpStatus.BAD_REQUEST);
+    }
     teamsUpdate.splice(indexTeam, 1);
-    console.log(teamsUpdate);
+
     // why doesn't work .save() ????????????????????????????
     user.$set('teams', teamsUpdate);
     return user;
@@ -174,5 +177,9 @@ export class UserService {
 
 
     
+  }
+
+  async acceptRegisteredManager(id: number) {
+    await this.userRepository.update({ registered: true}, { where: { id: id } });
   }
 }

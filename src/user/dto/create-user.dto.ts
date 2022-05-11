@@ -4,6 +4,8 @@ import { MUST_BE_STR, WRONG_EMAIL, MORE4LESS22 } from '../../constants';
 export class CreateUserDto {
   readonly name: string;
 
+  readonly registered: boolean;
+
   @IsString(MUST_BE_STR)
   @IsEmail({}, WRONG_EMAIL)
   readonly email: string;

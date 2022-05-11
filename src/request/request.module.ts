@@ -8,7 +8,12 @@ import { TeamModule } from 'src/team/team.module';
 import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
-  imports: [forwardRef(() =>UserModule), TeamModule, AuthModule, SequelizeModule.forFeature([Request])],
+  imports: [
+    forwardRef(() =>UserModule), 
+    TeamModule, 
+    forwardRef(() =>AuthModule),
+    SequelizeModule.forFeature([Request])
+  ],
   providers: [RequestService],
   exports: [RequestService],
   controllers: [RequestController]

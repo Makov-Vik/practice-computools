@@ -35,9 +35,12 @@ const ACCESS_APPROVE = { message: 'access approve'};
 const NO_ACCESS = { message: 'no access'};
 const NO_SUCH_REQ = { message: 'no such request'};
 const NO_SUCH_TEAM = { message: 'no such team'};
-const SUCCESS = {message: 'operation success'};
+const SUCCESS = { message: 'operation success'};
+const FAILED = { message: "operation failed"};
 const FAIL_WRITE_DB = { message: 'failed write to database'};
 const BAN = { message: "you got banned"};
+const AUTHENTICATED_ERROR = {message: "you have not been authenticated yet"};
+const ADMIN_ID = 1;
 
 const LOG_USER_CREATE = { message: "created user: "};
 
@@ -56,17 +59,17 @@ enum RequestStatus {
 enum RequestType {
   join = 1,
   leave = 2,
+  signup = 3,
 };
 
-const REQUEST_MESSAGE = {
+const REQUEST_JOIN = {
   type: RequestType.join,
   status: RequestStatus.pending,
 }
-
-const MESSAGE = {
-  subject: 'confirm join',
-  text: '',
-};
+const REQUEST_LEAVE = {
+  type: RequestType.leave,
+  status: RequestStatus.pending,
+}
 
 export {
   PRIMARY_KEY,
@@ -93,14 +96,17 @@ export {
   ACCESS_APPROVE,
   REQUEST_WAS_DECLINE,
   VALIDATION,
-  MESSAGE,
   NO_SUCH_REQ,
   NO_SUCH_TEAM,
   SUCCESS,
   FAIL_WRITE_DB,
+  FAILED,
   ROLE,
   RequestStatus,
   RequestType,
-  REQUEST_MESSAGE,
-  BAN
+  REQUEST_JOIN,
+  REQUEST_LEAVE,
+  BAN,
+  AUTHENTICATED_ERROR,
+  ADMIN_ID
 };

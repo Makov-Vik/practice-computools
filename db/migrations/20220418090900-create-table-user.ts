@@ -35,6 +35,10 @@ export const up = async (queryInterface: QueryInterface, Sequelize: Sequelize_mi
     teams: {
       type: Sequelize.INTEGER
     },
+    registered: {
+      type: Sequelize.BOOLEAN,
+      allowNull: false
+    },
     ban: {
       type: Sequelize.BOOLEAN,
       defaultValue: false

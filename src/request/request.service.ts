@@ -2,12 +2,18 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { CreateRequsetDto } from './dto/create-request.dto';
 import { Request } from './request.model';
-import { mailer } from '../nodemailer';
 import { UserService } from 'src/user/user.service';
-import { ACCESS_APPROVE, ACCESS_CANCELED, ACCESS_LEAVE, FAIL_WRITE_DB, MESSAGE, NO_SUCH_REQ, NO_SUCH_TEAM, RECIPIENT_NOT_FOUND, RequestStatus, RequestType, REQUEST_CANCELED, REQUEST_MESSAGE, REQUEST_NOT_FOUND, REQUEST_WAS_APPROVED, REQUEST_WAS_DECLINE, RESENDING } from 'src/constants';
+import { ACCESS_APPROVE, ACCESS_CANCELED, ACCESS_LEAVE, 
+  ADMIN_ID, 
+  FAILED, FAIL_WRITE_DB, NO_SUCH_REQ, NO_SUCH_TEAM, 
+  RECIPIENT_NOT_FOUND, RequestStatus, RequestType, 
+  REQUEST_CANCELED, REQUEST_JOIN, REQUEST_LEAVE, 
+  REQUEST_NOT_FOUND, REQUEST_WAS_APPROVED, 
+  REQUEST_WAS_DECLINE, RESENDING, SUCCESS, USER_NOT_FOUND } from 'src/constants';
 import { TeamService } from 'src/team/team.service';
-import { User } from 'src/user/user.model';
 import { RequsetDto } from './dto/request.dto';
+import { DeleteFromTeamDto } from './dto/delete-from-team.dto';
+import { CreateUserDto } from 'src/user/dto/create-user.dto';
 
 @Injectable()
 export class RequestService {
@@ -37,15 +43,9 @@ export class RequestService {
     });
 
     if (requests.length === 0) {
-      mailer({
-        ...MESSAGE, 
-        to: manager.email,
-        html: `<p>${description}</p>`
-      });
-
       try {
         return await this.requestRepository.create({ 
-        ...REQUEST_MESSAGE,
+        ...REQUEST_JOIN,
         from: req.user.id,
         to: input.to,
         description: description,
@@ -76,14 +76,8 @@ export class RequestService {
         });
         
         if (requests.length === 0) {
-          mailer({
-            ...MESSAGE, 
-            to: manager.email,
-            html: `<p>${description}</p>`
-          });
-    
           return await this.requestRepository.create({ 
-            ...REQUEST_MESSAGE,
+            ...REQUEST_LEAVE,
             from: req.user.id,
             to: input.to,
             description: description,
@@ -158,5 +152,59 @@ export class RequestService {
     
     await this.requestRepository.update({status: RequestStatus.canceled}, { where: { id: input.id }});
     return ACCESS_CANCELED;
+  }
+
+  async deleteFromTeam(req: any, input: DeleteFromTeamDto) {
+    try {
+      await this.requestRepository.create({ 
+      type: RequestType.leave,
+      status: RequestStatus.approve,
+      from: req.user.id,
+      to: req.user.id,
+      description: input.description,
+    });
+
+    const team = await this.teamService.getTeamByName(input.team);
+    await this.userService.leaveTeam(team, input.player);
+
+    } catch (e) {
+      console.log(e);
+      throw new HttpException(FAILED, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    return SUCCESS
+  }
+
+  async reqSignUpManager(input: CreateUserDto) {
+    const manager = await this.userService.getUserByEmail(input.email);
+
+    if (!manager) {
+      throw new HttpException(USER_NOT_FOUND, HttpStatus.NOT_FOUND);
+    }
+    try {    
+      return await this.requestRepository.create({ 
+      type: RequestType.signup,
+      status: RequestStatus.pending,
+      from: manager.id,
+      to: ADMIN_ID,
+      description: 'manager registration request',
+      });
+    } catch(e) {
+      console.log(e)
+      throw new HttpException(FAIL_WRITE_DB, HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+  }
+
+  async acceptRegistrationManager(input: Request) {
+    const request =  await this.requestRepository.findOne({ where: { id: input.id }});
+    if (!request) {
+      throw new HttpException(NO_SUCH_REQ, HttpStatus.NOT_FOUND);
+    }
+
+    await this.requestRepository.update({status: input.status}, { where: { id: input.id }});
+    
+    if (input.status = RequestStatus.approve) {
+      await this.userService.acceptRegisteredManager(request.from)
+    }
   }
 }

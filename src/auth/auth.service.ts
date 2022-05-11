@@ -14,6 +14,7 @@ import {
   SAME_EMAIL,
   WRONG_EMAIL,
   USER_NOT_FOUND,
+  AUTHENTICATED_ERROR,
 } from '../constants';
 import { mailer } from '../nodemailer';
 import * as dotenv from 'dotenv';
@@ -30,6 +31,9 @@ export class AuthService {
 
   async login(userDto: CreateUserDto) {
     const user = await this.validateUser(userDto);
+    if (!user.registered) {
+      throw new HttpException(AUTHENTICATED_ERROR, HttpStatus.FORBIDDEN);
+    }
     return this.generateToken(user);
   }
 

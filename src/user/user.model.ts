@@ -43,6 +43,9 @@ export class User extends Model<User, UserCreate> {
   @ForeignKey(() => Role)
   roleId: number;
 
+  @Column({ type: DataType.BOOLEAN, allowNull: false})
+  registered: boolean;
+
   @Column({ type: DataType.BOOLEAN, defaultValue: false })
   ban: boolean;
 

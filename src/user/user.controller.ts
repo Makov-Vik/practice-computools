@@ -14,6 +14,7 @@ import { RequestService } from 'src/request/request.service';
 import { RequsetDto } from 'src/request/dto/request.dto';
 import { BanDto } from './dto/ban.dto';
 import { Role } from '../auth/checkRole.decorator';
+//import { JwtAuthGuard } from 'src/auth/jwt.guard';
 
 @Controller('user')
 export class UserController {
@@ -34,6 +35,8 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @Get('me')
   getMe(@Req() req: any) {
+    //console.log(req);
+    //console.log(req.user);
     return this.userServise.getMe(req);
   }
 

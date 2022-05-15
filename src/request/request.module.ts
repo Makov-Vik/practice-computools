@@ -6,9 +6,11 @@ import { RequestService } from './request.service';
 import { RequestController } from './request.controller';
 import { TeamModule } from 'src/team/team.module';
 import { AuthModule } from 'src/auth/auth.module';
+import { LogModule } from 'src/log/log.module';
 
 @Module({
   imports: [
+    LogModule,
     forwardRef(() =>UserModule), 
     TeamModule, 
     forwardRef(() =>AuthModule),

@@ -62,6 +62,12 @@ enum RequestType {
   signup = 3,
 };
 
+enum LogType {
+  create = 1,
+  update = 2,
+  error = 3,
+};
+
 const REQUEST_JOIN = {
   type: RequestType.join,
   status: RequestStatus.pending,
@@ -104,6 +110,7 @@ export {
   ROLE,
   RequestStatus,
   RequestType,
+  LogType,
   REQUEST_JOIN,
   REQUEST_LEAVE,
   BAN,

@@ -15,11 +15,13 @@ import {
   WRONG_EMAIL,
   USER_NOT_FOUND,
   AUTHENTICATED_ERROR,
+  LogType,
 } from '../constants';
 import { mailer } from '../nodemailer';
 import * as dotenv from 'dotenv';
 import * as env from 'env-var';
 import { User } from '../user/user.model';
+import { LogService } from 'src/log/log.service';
 dotenv.config();
 
 @Injectable()
@@ -27,6 +29,7 @@ export class AuthService {
   constructor(
     private userService: UserService,
     private jwtService: JwtService,
+    private logService: LogService
   ) {}
 
   async login(userDto: CreateUserDto) {
@@ -34,6 +37,14 @@ export class AuthService {
     if (!user.registered) {
       throw new HttpException(AUTHENTICATED_ERROR, HttpStatus.FORBIDDEN);
     }
+    // log to mongo
+    const log = {
+      message: `user: ${user.email} was login`,
+      where: 'auth.servise.ts (login())',
+      type: LogType[LogType.update]
+    }
+    this.logService.create(log);
+
     return this.generateToken(user);
   }
 
@@ -48,6 +59,15 @@ export class AuthService {
       ...userDto,
       password: hashPassword,
     });
+
+    // log to mongo
+    const log = {
+      message: `user: ${user.email} was registered`,
+      where: 'auth.servise.ts (registration())',
+      type: LogType[LogType.create]
+    }
+    this.logService.create(log);
+
     return this.generateToken(user);
   }
 
@@ -72,6 +92,14 @@ export class AuthService {
   `,
     };
     mailer(message);
+
+    // log to mongo
+    const log = {
+      message: `user: ${user.email} forgot password`,
+      where: 'auth.servise.ts (forgotPassword())',
+      type: LogType[LogType.create]
+    }
+    this.logService.create(log);
   }
 
   private async generateToken(user: User) {

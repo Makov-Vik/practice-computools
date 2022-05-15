@@ -7,11 +7,13 @@ import * as env from 'env-var';
 import { RequestModule } from 'src/request/request.module';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { LogModule } from 'src/log/log.module';
 
 @Module({
   controllers: [AuthController],
   providers: [AuthService, GoogleStrategy, JwtStrategy],
   imports: [
+    LogModule,
     forwardRef(() => UserModule),
     forwardRef(() => RequestModule),
     JwtModule.register({

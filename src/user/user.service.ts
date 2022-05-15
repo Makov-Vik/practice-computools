@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { ENCODING_SALT, FAIL_WRITE_DB, LOG_USER_CREATE, NOT_AUTHORIZED, NOT_FOUND, NO_ACCESS, NO_SUCH_TEAM, ROLE, ROLE_USER_NOT_FOUND, SAME_EMAIL, SUCCESS, USER_NOT_FOUND, WRONG_EMAIL } from '../constants';
+import { ENCODING_SALT, FAIL_WRITE_DB, LogType, LOG_USER_CREATE, NOT_AUTHORIZED, NOT_FOUND, NO_ACCESS, NO_SUCH_TEAM, ROLE, ROLE_USER_NOT_FOUND, SAME_EMAIL, SUCCESS, USER_NOT_FOUND, WRONG_EMAIL } from '../constants';
 import { RoleService } from '../role/role.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './user.model';
@@ -26,6 +26,14 @@ export class UserService {
   async createUser(dto: CreateUserDto) {
     const role = await this.roleService.getRoleByValue(ROLE[ROLE.player]);
     if(!role) {
+      //log to mongo
+      const log = {
+        message: ROLE_USER_NOT_FOUND.message,
+        where: 'user.servise.ts (createUser())',
+        type: LogType[LogType.error]
+      }
+      this.logService.create(log);
+
       throw new HttpException(ROLE_USER_NOT_FOUND, HttpStatus.NOT_FOUND); 
     }
     const dtoWithRole = { ...dto, roleId: role.id, ban: false, banReason: '' };
@@ -34,8 +42,8 @@ export class UserService {
     const message = LOG_USER_CREATE.message.concat(`${dto.email}`);
     const log = {
       message: message,
-      where: 'user.servise.ts',
-      type: 'create'
+      where: 'user.servise.ts (createUser())',
+      type: LogType[LogType.create]
     }
     this.logService.create(log);
     
@@ -51,6 +59,14 @@ export class UserService {
     try {
       user = this.jwtService.verify(token);
     } catch {
+      // log to mongo
+      const log = {
+        message: `fail verify token`,
+        where: 'user.servise.ts (changePassword())',
+        type: LogType[LogType.error]
+      }
+      this.logService.create(log);
+      
       return new HttpException(NOT_FOUND, HttpStatus.NOT_FOUND);
     }
     const hashPassword = await bcrypt.hash(input.password, ENCODING_SALT);
@@ -61,7 +77,15 @@ export class UserService {
       }
     });
 
-    return await this.getUserByEmail(user.email); // may be change return to "chahged success"
+    // log to mongo
+    const log = {
+      message: `user ${user.email} changed password`,
+      where: 'user.servise.ts (changePassword())',
+      type: LogType[LogType.update]
+    }
+    this.logService.create(log);
+
+    return await this.getUserByEmail(user.email); // may be change return to "changed success"
   }
 
   async getUserById(idInput: number) {
@@ -82,11 +106,30 @@ export class UserService {
       throw new HttpException(SAME_EMAIL, HttpStatus.BAD_REQUEST);
     }
 
-    this.userRepository.update({ email: input.email }, {
+    try {
+      this.userRepository.update({ email: input.email }, {
       where: {
         id: user.id
       }
-    });
+      });
+    } catch(e) {
+      // log to mongo
+      const log = {
+        message: `faild write into db. ${e}`,
+        where: 'user.servise.ts (changeLogin())',
+        type: LogType[LogType.error]
+      }
+      this.logService.create(log);
+    }
+ 
+
+    // log to mongo
+    const log = {
+      message: `user ${user.email} changed password`,
+      where: 'user.servise.ts (changeLogin())',
+      type: LogType[LogType.update]
+    }
+    this.logService.create(log);
     return "successfully modified"
   }
 
@@ -102,11 +145,22 @@ export class UserService {
   async uploadImage(file: UploadImageDto, req: any) {
     const user = req.user;
 
-    this.userRepository.update({ pathPhoto: file.filename }, {
-      where: {
-        id: user.id
+    try {
+      this.userRepository.update({ pathPhoto: file.filename }, {
+        where: {
+          id: user.id
+        }
+      });      
+    } catch(e) {
+     // log to mongo
+     const log = {
+      message: `faild update db. ${e}`,
+      where: 'user.servise.ts (uploadImage())',
+      type: LogType[LogType.error]
       }
-    });
+      this.logService.create(log);
+    }
+
     return "upload success"
   }
 
@@ -126,7 +180,25 @@ export class UserService {
     teamsUpdate.push(team);
 
     // why doesn't work .save() / $add() ????????????????????????????
-    await user.$set('teams', teamsUpdate);
+    try {
+      await user.$set('teams', teamsUpdate);
+    } catch(e) {
+      // log to mongo
+      const log = {
+      message: `faild update db. ${e}`,
+      where: 'user.servise.ts (addToTeam())',
+      type: LogType[LogType.error]
+      }
+      this.logService.create(log);      
+    }
+    // log to mongo
+    const log = {
+      message: `add to team ${team} user ${user.email}`,
+      where: 'user.servise.ts (addToTeam())',
+      type: LogType[LogType.update]
+      }
+    this.logService.create(log);  
+    
     return user;
   }
 
@@ -147,7 +219,26 @@ export class UserService {
     teamsUpdate.splice(indexTeam, 1);
 
     // why doesn't work .save() ????????????????????????????
-    user.$set('teams', teamsUpdate);
+    try {
+      user.$set('teams', teamsUpdate);
+    } catch(e) {
+      // log to mongo
+      const log = {
+        message: `faild leave team from db. ${e}`,
+        where: 'user.servise.ts (leaveTeam())',
+        type: LogType[LogType.error]
+        }
+      this.logService.create(log);  
+    }
+    
+
+    // log to mongo
+    const log = {
+      message: `leave from team ${team} user ${user.email}`,
+      where: 'user.servise.ts (addToTeam())',
+      type: LogType[LogType.error]
+      }
+    this.logService.create(log);  
     return user;
   }
 
@@ -169,17 +260,44 @@ export class UserService {
     
     try {
       await user.save(); 
+      // log to mongo
+      const log = {
+        message: `user ${user.email} was ban: ${input.ban}`,
+        where: 'user.servise.ts (ban())',
+        type: LogType[LogType.update]
+      }
+      this.logService.create(log);  
       return SUCCESS;
     } catch (e) {
-      console.log(e);
+      // log to mongo
+      const log = {
+      message: `faild write into db ${e}`,
+      where: 'user.servise.ts (ban())',
+      type: LogType[LogType.error]
+      }
+      this.logService.create(log);  
       throw new HttpException(FAIL_WRITE_DB, HttpStatus.INTERNAL_SERVER_ERROR)
-    }
-
-
-    
+    } 
   }
 
   async acceptRegisteredManager(id: number) {
-    await this.userRepository.update({ registered: true}, { where: { id: id } });
+    try {
+      await this.userRepository.update({ registered: true}, { where: { id: id } });
+      // log to mongo
+      const log = {
+        message: `manager was accept registered`,
+        where: 'user.servise.ts (acceptRegisteredManager())',
+        type: LogType[LogType.update]
+        }
+        this.logService.create(log);  
+    } catch(e) {
+      // log to mongo
+      const log = {
+        message: `faild write into db ${e}`,
+        where: 'user.servise.ts (acceptRegisteredManager())',
+        type: LogType[LogType.error]
+        }
+        this.logService.create(log);  
+    }
   }
 }

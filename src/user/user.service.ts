@@ -181,9 +181,9 @@ export class UserService {
   }
 
   async getImage(req: any, res: any) {
-    const user = req.user;
+    const user = await this.userRepository.findOne({ where: {id: req.user.id} });
 
-    return await res.sendFile(user.pathPhoto, { root: './images' })
+    return await res.sendFile(user?.pathPhoto, { root: './images' })
   }
 
   async addToTeam(team: Team, userId: number) {

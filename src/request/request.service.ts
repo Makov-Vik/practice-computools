@@ -2,19 +2,19 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { CreateRequsetDto } from './dto/create-request.dto';
 import { Request } from './request.model';
-import { UserService } from 'src/user/user.service';
+import { UserService } from '../user/user.service';
 import { ACCESS_APPROVE, ACCESS_CANCELED, ACCESS_LEAVE, 
   ADMIN_ID, 
   FAILED, FAIL_WRITE_DB, LogType, NO_SUCH_REQ, NO_SUCH_TEAM, 
   RECIPIENT_NOT_FOUND, RequestStatus, RequestType, 
   REQUEST_CANCELED, REQUEST_JOIN, REQUEST_LEAVE, 
   REQUEST_NOT_FOUND, REQUEST_WAS_APPROVED, 
-  REQUEST_WAS_DECLINE, RESENDING, SUCCESS, USER_NOT_FOUND } from 'src/constants';
-import { TeamService } from 'src/team/team.service';
+  REQUEST_WAS_DECLINE, RESENDING, SUCCESS, USER_NOT_FOUND } from '../constants';
+import { TeamService } from '../team/team.service';
 import { RequsetDto } from './dto/request.dto';
 import { DeleteFromTeamDto } from './dto/delete-from-team.dto';
-import { CreateUserDto } from 'src/user/dto/create-user.dto';
-import { LogService } from 'src/log/log.service';
+import { CreateUserDto } from '../user/dto/create-user.dto';
+import { LogService } from '../log/log.service';
 import { request } from 'http';
 
 @Injectable()
@@ -26,7 +26,11 @@ export class RequestService {
 
   async getMyNotifications(req: any) {
     return await this.requestRepository.findAll( { where: {to: req.user.id}})
-  }  
+  }
+
+  async getMyMessage(req: any) {
+    return await this.requestRepository.findAll( { where: {from: req.user.id}})
+  }
 
   async requestJoinTeam(req: any, input: CreateRequsetDto) {
     // or recievd only 'team' in input and search manager throught team ?????????????????
@@ -60,7 +64,7 @@ export class RequestService {
           where: 'request.servise.ts (requestJoinTeam())',
           type: LogType[LogType.create]
         }
-        this.logService.create(log);
+        await this.logService.create(log);
         return request;
       } catch(e) {
         // log to mongo
@@ -69,7 +73,7 @@ export class RequestService {
           where: 'request.servise.ts (requestJoinTeam())',
           type: LogType[LogType.error]
         }
-        this.logService.create(log);
+        await this.logService.create(log);
         throw new HttpException(FAIL_WRITE_DB, HttpStatus.INTERNAL_SERVER_ERROR)
       }
 
@@ -108,7 +112,7 @@ export class RequestService {
               where: 'request.servise.ts (requestJoinTeam())',
               type: LogType[LogType.create]
             }
-            this.logService.create(log);
+            await this.logService.create(log);
 
             return request;         
           } catch(e) {
@@ -118,7 +122,7 @@ export class RequestService {
               where: 'request.servise.ts (requestLeaveTeam())',
               type: LogType[LogType.error]
             }
-            this.logService.create(log);
+            await this.logService.create(log);
           }
 
         }
@@ -143,9 +147,13 @@ export class RequestService {
       throw new HttpException(NO_SUCH_TEAM, HttpStatus.BAD_REQUEST);
     }
 
+    const user = await this.userService.getUserById(input.from)
+
     // add team for user
     try {
       await this.userService.addToTeam(team, input.from);  // если true? то тогда делать метку approve .................................
+      
+      //await this.teamService.addToTeam(user, team);
 
       await this.requestRepository.update({status: RequestStatus.approve}, { where: { id: input.id }})
       
@@ -155,19 +163,21 @@ export class RequestService {
         where: 'request.servise.ts (requestJoinTeam())',
         type: LogType[LogType.create]
       }
-      this.logService.create(log);
+      await this.logService.create(log);
+      
+      return ACCESS_APPROVE;
     } catch(e) {
       // log to mongo
+      console.log(e)
       const log = {
         message: `faild write into db. ${e}`,
         where: 'request.servise.ts (acceptJoin())',
         type: LogType[LogType.error]
       }
-      this.logService.create(log);
+      await this.logService.create(log);
+
+      throw new HttpException(FAIL_WRITE_DB, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-
-
-    return ACCESS_APPROVE;
   }
 
   async acceptLeave(input: Request) {
@@ -200,7 +210,8 @@ export class RequestService {
         where: 'request.servise.ts (acceptLeave())',
         type: LogType[LogType.create]
       }
-      this.logService.create(log);
+      await this.logService.create(log);
+      return ACCESS_LEAVE;
     } catch(e) {
       // log to mongo
       const log = {
@@ -208,10 +219,8 @@ export class RequestService {
         where: 'request.servise.ts (acceptLeave())',
         type: LogType[LogType.error]
       }
-      this.logService.create(log);
+      await this.logService.create(log);
     }
-
-    return ACCESS_LEAVE;
   }
 
   async cancelRequest(_req: any, input: RequsetDto) {
@@ -238,7 +247,7 @@ export class RequestService {
         where: 'request.servise.ts (cancelRequest())',
         type: LogType[LogType.update]
       }
-      this.logService.create(log);
+      await this.logService.create(log);
     } catch(e) {
       // log to mongo
       const log = {
@@ -246,7 +255,7 @@ export class RequestService {
         where: 'request.servise.ts (cancelRequest())',
         type: LogType[LogType.error]
       }
-      this.logService.create(log);
+      await this.logService.create(log);
     }
     return ACCESS_CANCELED;
   }
@@ -269,7 +278,7 @@ export class RequestService {
       where: 'request.servise.ts (deleteFromTeam())',
       type: LogType[LogType.create]
     }
-    this.logService.create(log);
+    await this.logService.create(log);
     } catch (e) {
       // log to mongo
       const log = {
@@ -277,7 +286,7 @@ export class RequestService {
         where: 'request.servise.ts (deleteFromTeam())',
         type: LogType[LogType.error]
       }
-      this.logService.create(log);
+      await this.logService.create(log);
       throw new HttpException(FAILED, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
@@ -304,17 +313,18 @@ export class RequestService {
         where: 'request.servise.ts (reqSignUpManager())',
         type: LogType[LogType.create]
       }
-      this.logService.create(log);
+      await this.logService.create(log);
 
       return request;
     } catch(e) {
+
       // log to mongo
       const log = {
         message: `faild write into db. ${e}`,
         where: 'request.servise.ts (reqSignUpManager())',
         type: LogType[LogType.error]
       }
-      this.logService.create(log);
+      await this.logService.create(log);
       throw new HttpException(FAIL_WRITE_DB, HttpStatus.INTERNAL_SERVER_ERROR)
     }
 
@@ -340,7 +350,9 @@ export class RequestService {
         where: 'request.servise.ts (acceptRegistrationManager())',
         type: LogType[LogType.update]
       }
-      this.logService.create(log);
+      await this.logService.create(log);
+      
+      return SUCCESS
     } catch(e) {
       // log to mongo
       const log = {
@@ -348,8 +360,9 @@ export class RequestService {
         where: 'request.servise.ts (acceptRegistrationManager())',
         type: LogType[LogType.error]
       }
-      this.logService.create(log);
+      await this.logService.create(log);
     }
+
 
   }
 }

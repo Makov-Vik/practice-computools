@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { SAME_TEAM } from 'src/constants';
-import { User } from 'src/user/user.model';
+import { SAME_TEAM } from '../constants';
+import { User } from '../user/user.model';
 import { CreateTeamDto } from './dto/create-team.dto';
 import { Team } from './team.model';
 
@@ -26,4 +26,46 @@ export class TeamService {
   async getTeams() {
     return await this.teamRepository.findAll();
   }
+
+  // async addToTeam(user: User, team: Team) {
+  //   // console.log(userId);
+  //   // const user = await this.teamRepository.findOne({ where: {id: userId} });
+  //   // if(!user) {
+  //   //   throw new HttpException({message: 'user not found'}, HttpStatus.NOT_FOUND); 
+  //   // }
+
+  //   // const team2 = await this.getTeamByName(team.name)
+  //   // if (!team2) {
+  //   //   throw {}
+  //   // }
+  //   // const usersUpdate = team.users;
+  //   // usersUpdate.push(user);
+
+
+  //   // why doesn't work .save() / $add() ????????????????????????????
+  //   try {
+  //     await team.$add('users', user);
+  //     //const newUser = await this.userRepository.update({'teams': teamsUpdate}, { where: {id: userId} });
+      
+  //     // log to mongo
+  //     // const log = {
+  //     // message: `add to team ${team} user ${user.email}`,
+  //     // where: 'user.servise.ts (addToTeam())',
+  //     // type: LogType[LogType.update]
+  //     // }
+  //     // await this.logService.create(log); 
+
+  //     //return user;      
+  //   } catch(e) {
+  //     console.log(e)
+  //     // log to mongo
+  //     // const log = {
+  //     // message: `faild update db. ${e}`,
+  //     // where: 'user.servise.ts (addToTeam())',
+  //     // type: LogType[LogType.error]
+  //     // }
+  //     // await this.logService.create(log);
+ 
+  //   }
+  // }
 }

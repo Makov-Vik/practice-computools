@@ -1,7 +1,7 @@
 import { Injectable, UseGuards } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { LogType } from 'src/constants';
-import { LogService } from 'src/log/log.service';
+import { LogType } from '../constants';
+import { LogService } from '../log/log.service';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { Role } from './role.model';
 
@@ -39,5 +39,9 @@ export class RoleService {
       where: { role: roleInput },
     });
     return role;
+  }
+
+  async getAllRoles() {
+    return await this.roleRepository.findAll()
   }
 }

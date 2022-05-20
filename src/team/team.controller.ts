@@ -1,9 +1,8 @@
 import { Controller, Post, Get, Body, Param, UseGuards, Req } from '@nestjs/common';
 import { Role } from '../auth/checkRole.decorator';
-import { RoleGuard } from 'src/auth/role.guard';
 import { CreateTeamDto } from './dto/create-team.dto';
 import { TeamService } from './team.service';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('team')
 export class TeamController {

@@ -21,7 +21,7 @@ import { mailer } from '../nodemailer';
 import * as dotenv from 'dotenv';
 import * as env from 'env-var';
 import { User } from '../user/user.model';
-import { LogService } from 'src/log/log.service';
+import { LogService } from '../log/log.service';
 dotenv.config();
 
 @Injectable()

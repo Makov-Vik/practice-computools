@@ -4,16 +4,16 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtModule } from '@nestjs/jwt';
 import * as env from 'env-var';
-import { RequestModule } from 'src/request/request.module';
+import { RequestModule } from '../request/request.module';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
-import { LogModule } from 'src/log/log.module';
+import { LogModule } from '../log/log.module';
 
 @Module({
   controllers: [AuthController],
   providers: [AuthService, GoogleStrategy, JwtStrategy],
   imports: [
-    LogModule,
+    forwardRef(() => LogModule),
     forwardRef(() => UserModule),
     forwardRef(() => RequestModule),
     JwtModule.register({

@@ -40,7 +40,8 @@ const FAILED = { message: "operation failed"};
 const FAIL_WRITE_DB = { message: 'failed write to database'};
 const BAN = { message: "you got banned"};
 const AUTHENTICATED_ERROR = {message: "you have not been authenticated yet"};
-const ADMIN_ID = 1;
+
+const ADMIN_ID = 34;
 
 const LOG_USER_CREATE = { message: "created user: "};
 

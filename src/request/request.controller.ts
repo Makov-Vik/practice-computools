@@ -1,6 +1,6 @@
 import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
-import { Role } from 'src/auth/checkRole.decorator';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { Role } from '../auth/checkRole.decorator';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { DeleteFromTeamDto } from './dto/delete-from-team.dto';
 import { Request } from './request.model';
 import { RequestService } from './request.service';

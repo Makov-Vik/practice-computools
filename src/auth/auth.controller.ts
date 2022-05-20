@@ -4,7 +4,7 @@ import { AuthService } from './auth.service';
 import { ValidationPipe } from '../pipe/validation.pipe';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { UserService } from '../user/user.service';
-import { RequestService } from 'src/request/request.service';
+import { RequestService } from '../request/request.service';
 import { AuthGuard } from '@nestjs/passport';
 
 @Controller('auth')
@@ -49,6 +49,6 @@ export class AuthController {
   @Post('/registrationManager')
   async registrationManager(@Body() userDto: CreateUserDto) {
     await this.authService.registration({ ...userDto, registered: false })
-    await this.requestService.reqSignUpManager(userDto);
+    return await this.requestService.reqSignUpManager(userDto);
   }
 }

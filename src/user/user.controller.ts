@@ -9,35 +9,37 @@ import { diskStorage } from 'multer';
 import { editFileName, imageFileFilter } from './util/image-upload.util';
 import { UploadImageDto } from './dto/upload-image.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { CreateRequsetDto } from 'src/request/dto/create-request.dto';
-import { RequestService } from 'src/request/request.service';
-import { RequsetDto } from 'src/request/dto/request.dto';
+import { CreateRequsetDto } from '../request/dto/create-request.dto';
+import { RequestService } from '../request/request.service';
+import { RequsetDto } from '../request/dto/request.dto';
 import { BanDto } from './dto/ban.dto';
 import { Role } from '../auth/checkRole.decorator';
-//import { JwtAuthGuard } from 'src/auth/jwt.guard';
 
 @Controller('user')
 export class UserController {
-  constructor(private userServise: UserService, private requestService: RequestService) {}
+  constructor(private userService: UserService, private requestService: RequestService) {}
 
   @Get()
   getUserById(@Body() input: User) {
-    return this.userServise.getUserById(input.id);
+    return this.userService.getUserById(input.id);
+  }
+
+  @Get('/byEmail')
+  @UseGuards(JwtAuthGuard)
+  getUserByEmail(@Body() input: any) {
+    return this.userService.getUserBy(input.email);
   }
 
   @Patch('changeLogin')
   @UseGuards(JwtAuthGuard)
   @UsePipes(ValidationPipe)
   changeLogin(@Body() input: ChangeLoginDto, @Req() req: any) {
-    return this.userServise.changeLogin(input, req);
+    return this.userService.changeLogin(input, req);
   }
-
-  @UseGuards(JwtAuthGuard)
   @Get('me')
+  @UseGuards(JwtAuthGuard)
   getMe(@Req() req: any) {
-    //console.log(req);
-    //console.log(req.user);
-    return this.userServise.getMe(req);
+    return this.userService.getMe(req);
   }
 
   @Post('image')
@@ -52,19 +54,25 @@ export class UserController {
     }),
   )
   uploadImage(@UploadedFile() file: UploadImageDto, @Req() req: any) {
-    return this.userServise.uploadImage(file, req);
+    return this.userService.uploadImage(file, req);
   }
 
   @Get('image')
   @UseGuards(JwtAuthGuard)
   getImage(@Req() req: any, @Res() res: any) {
-    return this.userServise.getImage(req, res);
+    return this.userService.getImage(req, res);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('myNotifications')
   getMyNotifications(@Req() req: any) {
     return this.requestService.getMyNotifications(req);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('myMessages')
+  getMyMessage(@Req() req: any) {
+    return this.requestService.getMyMessage(req);
   }
 
   @Post('joinTeam')
@@ -89,6 +97,6 @@ export class UserController {
   @Role('admin', 'manager')
   @UseGuards(JwtAuthGuard)
   ban(@Req() req: any, @Body() input: BanDto) {
-    return this.userServise.ban(req, input);
+    return this.userService.ban(req, input);
   }
 }

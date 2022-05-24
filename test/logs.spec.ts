@@ -1,12 +1,15 @@
 import * as request from 'supertest';
+import * as env from 'env-var';
+import * as dotenv from 'dotenv';
+dotenv.config({path: `.${env.get('NODE_ENV').required().asString()}.env`});
 
 describe('log', () => {
-  let tokenAdmin: any
+  let tokenAdmin: string;
 
   const admin = {
-    name: 'admin',
-    email: 'admin@gmail.com',
-    password: '1234'
+    name: env.get('ADMIN_NAME').required().asString(),
+    email: env.get('ADMIN_EMAIL').required().asString(),
+    password: env.get('ADMIN_PASSWORD').required().asString(),
   };
 
 
@@ -45,14 +48,14 @@ describe('log', () => {
     expect(getLogType).toBeDefined();
     expect(getLogType).not.toEqual([]);
 
-    const checkdeleteLog = (await request('http://localhost:3030')
+    const checkDeleteLog = (await request('http://localhost:3030')
     .delete('/log/one')
     .set('Authorization', `bearer ${tokenAdmin}`)
     .send({id: createLog._id}))
     .body
 
 
-    expect(checkdeleteLog).toEqual({ deletedCount: 1 })
+    expect(checkDeleteLog).toEqual({ deletedCount: 1 })
   });
 
 });

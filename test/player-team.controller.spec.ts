@@ -1,26 +1,25 @@
 import * as request from 'supertest';
-import { faker } from '@faker-js/faker';
-import { ACCESS_APPROVE, RequestStatus, RequestType } from '../src/constants';
-
+import { RequestStatus, RequestType } from '../src/constants';
+import * as Response from '../src/response.messages';
+import * as env from 'env-var';
+import * as dotenv from 'dotenv';
+import { generateNewUser } from './generateNewUser';
+dotenv.config({path: `.${env.get('NODE_ENV').required().asString()}.env`});
 
 describe('palyer-team', () => {
-  let tokenNewPlayer: any;
-  let tokenManager: any;
+  let tokenNewPlayer: string;
+  let tokenManager: string;
 
   const manager = {
-    "name": "manager",
-    "email": "manager@gmail.com",
-    "password": "1234",
+    name: env.get('MANAGER_NAME').required().asString(),
+    email: env.get('MANAGER_EMAIL').required().asString(),
+    password: env.get('MANAGER_PASSWORD').required().asString(),
   };
   const team = {
-    "name": "team",
-    "description": "team"
+    "name": env.get('TEAM_NAME').required().asString(),
+    "description": env.get('TEAM_DESCRIPTION').required().asString(),
   };
-  const newPlayer = {
-    "name": faker.name.firstName(),
-    "email": faker.internet.email(),
-    "password": "1234"
-  };
+  const newPlayer = generateNewUser();
 
   beforeAll(async function() {
 
@@ -58,8 +57,8 @@ describe('palyer-team', () => {
 
     expect(requestJoinTeam).toMatchObject({
       id: expect.any(Number),
-      type: RequestType.join,
-      status: RequestStatus.pending,
+      type: RequestType.JOIN,
+      status: RequestStatus.PENDING,
     })
 
     const acceptJoin = await request('http://localhost:3030')
@@ -67,12 +66,11 @@ describe('palyer-team', () => {
     .set('Authorization', `bearer ${tokenManager}`)
     .send({ id: requestJoinTeam.id, from: requestJoinTeam.from, description: requestJoinTeam.description });
 
-    expect(acceptJoin.body).toEqual(ACCESS_APPROVE);
+    expect(acceptJoin.body).toEqual(Response.ACCESS_JOIN);
     
 
     const checkAcceptJoin = (await request('http://localhost:3030')
     .get('/user/byEmail')
-    .set('Authorization', `bearer ${tokenManager}`)
     .send({ email: newPlayer.email }))
     .body;
 
@@ -89,8 +87,8 @@ describe('palyer-team', () => {
 
     expect(requestLeavTeam).toMatchObject({
       id: expect.any(Number),
-      type: RequestType.leave,
-      status: RequestStatus.pending,
+      type: RequestType.LEAVE,
+      status: RequestStatus.PENDING,
     });
 
 
@@ -99,10 +97,10 @@ describe('palyer-team', () => {
     .set('Authorization', `bearer ${tokenManager}`)
     .send({ id: requestLeavTeam.id, from: requestLeavTeam.from, description: requestLeavTeam.description });
 
+    expect(acceptLeave.body).toEqual(Response.ACCESS_LEAVE);
 
     const checkAcceptLeave = (await request('http://localhost:3030')
     .get('/user/byEmail')
-    .set('Authorization', `bearer ${tokenManager}`)
     .send({ email: newPlayer.email }))
     .body;
 
@@ -130,8 +128,8 @@ describe('palyer-team', () => {
 
     expect(requestJoinTeam).toMatchObject({
       id: expect.any(Number),
-      type: RequestType.join,
-      status: RequestStatus.pending,
+      type: RequestType.JOIN,
+      status: RequestStatus.PENDING,
     })
 
     const acceptJoin = await request('http://localhost:3030')
@@ -139,11 +137,10 @@ describe('palyer-team', () => {
     .set('Authorization', `bearer ${tokenManager}`)
     .send({ id: requestJoinTeam.id, from: requestJoinTeam.from, description: requestJoinTeam.description });
 
-    expect(acceptJoin.body).toEqual(ACCESS_APPROVE);
+    expect(acceptJoin.body).toEqual(Response.ACCESS_JOIN);
 
     const checkAcceptJoin = (await request('http://localhost:3030')
     .get('/user/byEmail')
-    .set('Authorization', `bearer ${tokenManager}`)
     .send({ email: newPlayer.email }))
     .body;
 
@@ -159,7 +156,6 @@ describe('palyer-team', () => {
 
     const checkDeletionPlayer = (await request('http://localhost:3030')
     .get('/user/byEmail')
-    .set('Authorization', `bearer ${tokenManager}`)
     .send({ email: newPlayer.email }))
     .body;
 

@@ -4,18 +4,16 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { JwtService } from '@nestjs/jwt';
 import { AuthGuard } from '@nestjs/passport';
-import { Observable } from 'rxjs';
-import { BAN, NOT_AUTHORIZED, NO_ACCESS, ROLE } from '../constants';
+import { ROLE } from '../constants';
+import * as Response from '../response.messages';
 import { ROLE_KEY } from './checkRole.decorator';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
-  constructor(private jwtService: JwtService, private reflector: Reflector) {
+  constructor( private reflector: Reflector) {
   super();
   }
 
@@ -32,12 +30,12 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     ])
 
     if (requiredRoles && !requiredRoles.includes(ROLE[user.roleId])){
-      throw new HttpException(NO_ACCESS, HttpStatus.FORBIDDEN);
+      throw new HttpException(Response.NO_ACCESS, HttpStatus.FORBIDDEN);
     }
 
       // check ban
       if (user.ban) {
-        throw new HttpException({ ...BAN, banReason: user.banReason}, HttpStatus.FORBIDDEN)
+        throw new HttpException({ ... Response.BAN, banReason: user.banReason}, HttpStatus.FORBIDDEN)
       }
 
     return user

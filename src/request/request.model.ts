@@ -3,9 +3,7 @@ import {
   Table,
   Column,
   DataType,
-  HasMany,
   ForeignKey,
-  BelongsTo,
 } from 'sequelize-typescript';
 import { User } from '../user/user.model';
 import { PRIMARY_KEY, RequestStatus } from '../constants';
@@ -22,17 +20,17 @@ export class Request extends Model<Request, CreateRequest> {
   id: number;
 
   @ForeignKey(() => User)
-  @Column({ type: DataType.NUMBER, allowNull: false })
+  @Column({ type: DataType.INTEGER, allowNull: false })
   from: number;
 
   @ForeignKey(() => User)
-  @Column({ type: DataType.NUMBER, allowNull: false })
+  @Column({ type: DataType.INTEGER, allowNull: false })
   to: number;
 
-  @Column({ type: DataType.NUMBER, defaultValue: RequestStatus.pending})
+  @Column({ type: DataType.INTEGER, defaultValue: RequestStatus.PENDING})
   status: number;
 
-  @Column({ type: DataType.NUMBER })
+  @Column({ type: DataType.INTEGER })
   type: number;
 
   @Column({ type: DataType.STRING })

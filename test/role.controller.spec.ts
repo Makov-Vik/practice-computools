@@ -1,47 +1,34 @@
 import * as request from 'supertest';
-import { faker } from '@faker-js/faker';
+import * as env from 'env-var';
+import * as dotenv from 'dotenv';
+import { ROLE } from '../src/constants';
+dotenv.config({path: `.${env.get('NODE_ENV').required().asString()}.env`});
 
 describe('RoleController', () => {
-  let tokenAdmin: any;
+  let tokenAdmin: string;
 
   const admin = {
-    name: 'admin',
-    email: 'admin@gmail.com',
-    password: '1234'
-  }
+    name: env.get('ADMIN_NAME').required().asString(),
+    email: env.get('ADMIN_EMAIL').required().asString(),
+    password: env.get('ADMIN_PASSWORD').required().asString(),
+  };
+
 
   beforeAll(async function() {
     tokenAdmin = (await request('http://localhost:3030').get('/auth/login').send(admin)).body.token;
   }, 10000);
 
-  it('post/get  role', async () => {
-    const role = {
-      role: faker.name.lastName(),
-      description: 'description'
-    }
-
-    const respondCreatedRole = (await request('http://localhost:3030')
-    .post('/role')
-    .set('Authorization', `bearer ${tokenAdmin}`)
-    .send(role))
-    .body;
-
-    expect(respondCreatedRole).toMatchObject({
-      id: expect.any(Number),
-      ...role,
-      updatedAt: expect.any(String),
-      createdAt: expect.any(String)
-    });
+  it('get role', async () => {
 
     const respondGetRole = (await request('http://localhost:3030')
     .get('/role')
     .set('Authorization', `bearer ${tokenAdmin}`)
-    .send({ role: role.role }))
+    .send({ role: ROLE[ROLE.PLAYER] }))
     .body;
 
     expect(respondGetRole).toMatchObject({
       id: expect.any(Number),
-      ...role,
+      role: ROLE[ROLE.PLAYER],
       updatedAt: expect.any(String),
       createdAt: expect.any(String)
     });

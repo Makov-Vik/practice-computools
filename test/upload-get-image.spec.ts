@@ -1,16 +1,12 @@
 import * as request from 'supertest';
-import { faker } from '@faker-js/faker';
-import { SUCCESS } from '../src/constants';
+import * as Response from '../src/response.messages';
 import * as path from 'path'
+import { generateNewUser } from './generateNewUser';
 
 describe('upload-get image', () => {
-  let tokenNewPlayer: any;
+  let tokenNewPlayer: string;
 
-  const newPlayer = {
-    "name": faker.name.firstName(),
-    "email": faker.internet.email(),
-    "password": "1234"
-  };
+  const newPlayer = generateNewUser();
 
   beforeAll(async function() {
     const resRegistration = await request('http://localhost:3030')
@@ -32,7 +28,7 @@ describe('upload-get image', () => {
     .attach('image', path.resolve(__dirname, './okay.jpg')))
     .body;
 
-    expect(newImage).toEqual(SUCCESS);
+    expect(newImage).toEqual(Response.SUCCESS);
 
     const newPlayerFromDB = (await request('http://localhost:3030')
     .get('/user/me')

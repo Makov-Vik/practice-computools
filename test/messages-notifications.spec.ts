@@ -1,25 +1,24 @@
 import * as request from 'supertest';
-import { faker } from '@faker-js/faker';
 import { RequestStatus, RequestType } from '../src/constants';
+import { generateNewUser } from './generateNewUser';
+import * as env from 'env-var';
+import * as dotenv from 'dotenv';
+dotenv.config({path: `.${env.get('NODE_ENV').required().asString()}.env`});
 
 describe('messages . notifications', () => {
-  let tokenNewPlayer: any;
-  let tokenManager: any;
+  let tokenNewPlayer: string;
+  let tokenManager: string;
 
   const manager = {
-    "name": "manager",
-    "email": "manager@gmail.com",
-    "password": "1234",
+    name: env.get('MANAGER_NAME').required().asString(),
+    email: env.get('MANAGER_EMAIL').required().asString(),
+    password: env.get('MANAGER_PASSWORD').required().asString(),
   };
   const team = {
-    "name": "team",
-    "description": "team"
+    "name": env.get('TEAM_NAME').required().asString(),
+    "description": env.get('TEAM_DESCRIPTION').required().asString(),
   };
-  const newPlayer = {
-    "name": faker.name.firstName(),
-    "email": faker.internet.email(),
-    "password": "1234"
-  };
+  const newPlayer = generateNewUser();
 
   beforeAll(async function() {
     const resRegistration = await request('http://localhost:3030')
@@ -54,10 +53,10 @@ describe('messages . notifications', () => {
 
   it('cancelRequest . get myMessages . get myNotifications', async () => {
 
-    const teamDB = (await request('http://localhost:3030')
+    const { body: [teamDB] } = (await request('http://localhost:3030')
     .get('/team')
     .query({ name: `${team.name}` }))
-    .body[0];
+    //.body[0];
 
     expect(teamDB).toMatchObject({
       "id": expect.any(Number),
@@ -73,8 +72,8 @@ describe('messages . notifications', () => {
 
     expect(requestJoinTeam).toMatchObject({
       id: expect.any(Number),
-      type: RequestType.join,
-      status: RequestStatus.pending,
+      type: RequestType.JOIN,
+      status: RequestStatus.PENDING,
     })
 
 

@@ -1,7 +1,7 @@
 import * as nodemailer from 'nodemailer';
 import * as env from 'env-var';
 import * as dotenv from 'dotenv';
-dotenv.config();
+dotenv.config({path: `.${env.get('NODE_ENV').required().asString()}.env`});
 
 const transporter = nodemailer.createTransport(
   {

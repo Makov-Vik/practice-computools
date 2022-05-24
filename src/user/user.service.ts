@@ -1,7 +1,8 @@
 import { HttpException, HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { ENCODING_SALT, FAIL_WRITE_DB, LogType, LOG_USER_CREATE, NOT_AUTHORIZED, NOT_FOUND, NO_ACCESS, NO_SUCH_TEAM, ROLE, ROLE_USER_NOT_FOUND, SAME_EMAIL, SUCCESS, USER_NOT_FOUND, WRONG_EMAIL } from '../constants';
+import { ENCODING_SALT, LogType, ROLE } from '../constants';
 import { RoleService } from '../role/role.service';
+import * as Response from '../response.messages';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './user.model';
 import { JwtService } from '@nestjs/jwt';
@@ -10,48 +11,47 @@ import * as dotenv from 'dotenv';
 import { LogService } from '../log/log.service';
 import { ChangeLoginDto } from './dto/change-login.dto';
 import { UploadImageDto } from './dto/upload-image.dto';
-import { includes } from 'lodash';
 import { Team } from '../team/team.model';
 import { BanDto } from './dto/ban.dto';
-import { where } from 'sequelize/types';
-dotenv.config();
+import * as env from 'env-var';
+dotenv.config({path: `.${env.get('NODE_ENV').required().asString()}.env`});
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectModel(User) private userRepository: typeof User,
-    private roleService: RoleService, private jwtService: JwtService, private logService: LogService
+    private jwtService: JwtService, private logService: LogService
   ) {}
 
   async createUser(dto: CreateUserDto) {
     let role;
     if(dto.registered) {
-      role = await this.roleService.getRoleByValue(ROLE[ROLE.player]);
+      role = ROLE.PLAYER;
     }
     else {
-      role = await this.roleService.getRoleByValue(ROLE[ROLE.manager]);
+      role = ROLE.MANAGER;
     }
     if(!role) {
       //log to mongo
       const log = {
-        message: ROLE_USER_NOT_FOUND.message,
+        message: Response.ROLE_USER_NOT_FOUND.message,
         where: 'user.servise.ts (createUser())',
-        type: LogType[LogType.error]
+        type: LogType.ERROR
       }
-      this.logService.create(log);
+      await this.logService.create(log);
 
-      throw new HttpException(ROLE_USER_NOT_FOUND, HttpStatus.NOT_FOUND); 
+      throw new HttpException(Response.ROLE_USER_NOT_FOUND, HttpStatus.NOT_FOUND); 
     }
-    const dtoWithRole = { ...dto, roleId: role.id, ban: false, banReason: '' };
+    const dtoWithRole = { ...dto, roleId: role, ban: false, banReason: '' };
 
     // log to mongo
-    const message = LOG_USER_CREATE.message.concat(`${dto.email}`);
+    const message = Response.LOG_USER_CREATE.message.concat(`${dto.email}`);
     const log = {
       message: message,
       where: 'user.servise.ts (createUser())',
-      type: LogType[LogType.create]
+      type: LogType.CREATE
     }
-    this.logService.create(log);
+    await this.logService.create(log);
     
     return await this.userRepository.create(dtoWithRole);
   }
@@ -60,10 +60,10 @@ export class UserService {
     return await this.userRepository.findOne({ where: { email }, include: {all: true} });
   }
 
-  async getUserBy(emailInput: string) {
+  async getUserByEmailShort(emailInput: string) {
     const user = await this.userRepository.findOne({ where: { email: emailInput }, include: {all: true} });
     if(!user) {
-      throw new HttpException(USER_NOT_FOUND, HttpStatus.NOT_FOUND); 
+      throw new HttpException(Response.USER_NOT_FOUND, HttpStatus.NOT_FOUND); 
     }
     const {id, name, roleId, pathPhoto, teams, ban, email} = user;
     return {id, name, roleId, pathPhoto, teams, ban, email};
@@ -78,11 +78,11 @@ export class UserService {
       const log = {
         message: `fail verify token`,
         where: 'user.servise.ts (changePassword())',
-        type: LogType[LogType.error]
+        type: LogType.ERROR
       }
-      this.logService.create(log);
+      await this.logService.create(log);
       
-      return new HttpException(NOT_FOUND, HttpStatus.NOT_FOUND);
+      return new HttpException(Response.NOT_FOUND, HttpStatus.NOT_FOUND);
     }
     const hashPassword = await bcrypt.hash(input.password, ENCODING_SALT);
 
@@ -96,9 +96,9 @@ export class UserService {
     const log = {
       message: `user ${user.email} changed password`,
       where: 'user.servise.ts (changePassword())',
-      type: LogType[LogType.update]
+      type: LogType.UPDATE
     }
-    this.logService.create(log);
+    await this.logService.create(log);
 
     return await this.getUserByEmail(user.email); // may be change return to "changed success"
   }
@@ -106,10 +106,8 @@ export class UserService {
   async getUserById(idInput: number) {
     const user = await this.userRepository.findOne({ where: { id: idInput }, include: { all: true } });
     if(!user) {
-      throw new HttpException(USER_NOT_FOUND, HttpStatus.NOT_FOUND); 
+      throw new HttpException(Response.USER_NOT_FOUND, HttpStatus.NOT_FOUND); 
     }
-    //const { id, name, email, pathPhoto, roleId, teams } = user;
-    //return { id, name, email, pathPhoto, roleId, teams }
     return user;
   }
 
@@ -118,7 +116,7 @@ export class UserService {
 
     const candidate = await this.getUserByEmail(input.email);
     if (candidate) {
-      throw new HttpException(SAME_EMAIL, HttpStatus.BAD_REQUEST);
+      throw new HttpException(Response.SAME_EMAIL, HttpStatus.BAD_REQUEST);
     }
 
     try {
@@ -132,9 +130,9 @@ export class UserService {
       const log = {
         message: `faild write into db. ${e}`,
         where: 'user.servise.ts (changeLogin())',
-        type: LogType[LogType.error]
+        type: LogType.ERROR
       }
-      this.logService.create(log);
+      await this.logService.create(log);
     }
  
 
@@ -142,16 +140,16 @@ export class UserService {
     const log = {
       message: `user ${user.email} changed password`,
       where: 'user.servise.ts (changeLogin())',
-      type: LogType[LogType.update]
+      type: LogType.UPDATE
     }
-    this.logService.create(log);
-    return SUCCESS
+    await this.logService.create(log);
+    return Response.SUCCESS
   }
 
   async getMe(req: any) {
     const user = await this.userRepository.findOne({ where: {id: req.user.id}, include: { all: true }} );
     if (!user) {
-      throw new UnauthorizedException(NOT_AUTHORIZED);
+      throw new UnauthorizedException(Response.NOT_AUTHORIZED);
     }
     const {id, name, email, roleId, pathPhoto, teams, ban, banReason} = user;
     return {id, name, email, roleId, pathPhoto, teams, ban, banReason};
@@ -170,14 +168,14 @@ export class UserService {
      const log = {
       message: `faild update db. ${e}`,
       where: 'user.servise.ts (uploadImage())',
-      type: LogType[LogType.error]
+      type: LogType.ERROR
       }
-      this.logService.create(log);
+      await this.logService.create(log);
       
-      throw new HttpException(FAIL_WRITE_DB, HttpStatus.BAD_REQUEST);
+      throw new HttpException(Response.FAIL_WRITE_DB, HttpStatus.BAD_REQUEST);
     }
 
-    return SUCCESS
+    return Response.SUCCESS
   }
 
   async getImage(req: any, res: any) {
@@ -189,7 +187,7 @@ export class UserService {
   async addToTeam(team: Team, userId: number) {
     const user = await this.userRepository.findOne({ where: {id: userId}, include: { all: true }} );
     if(!user) {
-      throw new HttpException(USER_NOT_FOUND, HttpStatus.NOT_FOUND); 
+      throw new HttpException(Response.USER_NOT_FOUND, HttpStatus.NOT_FOUND); 
     }
 
     const teamsUpdate = user.teams;
@@ -204,27 +202,28 @@ export class UserService {
       const log = {
       message: `add to team ${team} user ${user.email}`,
       where: 'user.servise.ts (addToTeam())',
-      type: LogType[LogType.update]
+      type: LogType.UPDATE
       }
       await this.logService.create(log); 
 
-      //return user;      
+      return true;
     } catch(e) {
       // log to mongo
       const log = {
       message: `faild update db. ${e}`,
       where: 'user.servise.ts (addToTeam())',
-      type: LogType[LogType.error]
+      type: LogType.ERROR
       }
       await this.logService.create(log);
  
+      return false
     }
   }
 
   async leaveTeam(team: any, userId: number) {
     const user = await this.userRepository.findOne({ where: {id: userId}, include: { all: true }} );
     if(!user) {
-      throw new HttpException(USER_NOT_FOUND, HttpStatus.NOT_FOUND); 
+      throw new HttpException(Response.USER_NOT_FOUND, HttpStatus.NOT_FOUND); 
     }
     
     const teamsUpdate = user.teams;
@@ -233,45 +232,43 @@ export class UserService {
       return item.getDataValue('name') === team.getDataValue('name')
     }));
     if (indexTeam === -1) {
-      throw new HttpException(NO_SUCH_TEAM, HttpStatus.BAD_REQUEST);
+      throw new HttpException(Response.NO_SUCH_TEAM, HttpStatus.BAD_REQUEST);
     }
     teamsUpdate.splice(indexTeam, 1);
 
-    // why doesn't work .save() ????????????????????????????
     try {
-      user.$set('teams', teamsUpdate);
+      await user.$set('teams', teamsUpdate);
+      // log to mongo
+      const log = {
+        message: `leave from team ${team} user ${user.email}`,
+        where: 'user.servise.ts (addToTeam())',
+        type: LogType.ERROR
+      }
+      await this.logService.create(log);
+
+      return user;
     } catch(e) {
       // log to mongo
       const log = {
         message: `faild leave team from db. ${e}`,
         where: 'user.servise.ts (leaveTeam())',
-        type: LogType[LogType.error]
+        type: LogType.ERROR
         }
         await this.logService.create(log);  
     }
-    
-
-    // log to mongo
-    const log = {
-      message: `leave from team ${team} user ${user.email}`,
-      where: 'user.servise.ts (addToTeam())',
-      type: LogType[LogType.error]
-    }
-    await this.logService.create(log);  
-    return user;
   }
 
   async ban(req: any, input: BanDto) {
     const user = await this.userRepository.findByPk(input.userId);
     if(!user) {
-      throw new HttpException(USER_NOT_FOUND, HttpStatus.NOT_FOUND); 
+      throw new HttpException(Response.USER_NOT_FOUND, HttpStatus.NOT_FOUND); 
     }
-    if (user.roleId === ROLE.admin) {
-      throw new HttpException(NO_ACCESS, HttpStatus.FORBIDDEN);
+    if (user.roleId === ROLE.ADMIN) {
+      throw new HttpException(Response.NO_ACCESS, HttpStatus.FORBIDDEN);
     }
 
-    if(req.user.roleId === ROLE.manager && user.roleId === ROLE.manager){
-      throw new HttpException(NO_ACCESS, HttpStatus.FORBIDDEN);
+    if(req.user.roleId === ROLE.MANAGER && user.roleId === ROLE.MANAGER){
+      throw new HttpException(Response.NO_ACCESS, HttpStatus.FORBIDDEN);
     }
 
     user.ban = input.ban;
@@ -283,19 +280,19 @@ export class UserService {
       const log = {
         message: `user ${user.email} was ban: ${input.ban}`,
         where: 'user.servise.ts (ban())',
-        type: LogType[LogType.update]
+        type: LogType.UPDATE
       }
       await this.logService.create(log);  
-      return SUCCESS;
+      return Response.SUCCESS;
     } catch (e) {
       // log to mongo
       const log = {
       message: `faild write into db ${e}`,
       where: 'user.servise.ts (ban())',
-      type: LogType[LogType.error]
+      type: LogType.ERROR
       }
       await this.logService.create(log);  
-      throw new HttpException(FAIL_WRITE_DB, HttpStatus.INTERNAL_SERVER_ERROR)
+      throw new HttpException(Response.FAIL_WRITE_DB, HttpStatus.INTERNAL_SERVER_ERROR)
     } 
   }
 
@@ -306,7 +303,7 @@ export class UserService {
       const log = {
         message: `manager was accept registered`,
         where: 'user.servise.ts (acceptRegisteredManager())',
-        type: LogType[LogType.update]
+        type: LogType.UPDATE
         }
       await this.logService.create(log);  
     } catch(e) {
@@ -314,9 +311,24 @@ export class UserService {
       const log = {
         message: `faild write into db ${e}`,
         where: 'user.servise.ts (acceptRegisteredManager())',
-        type: LogType[LogType.error]
+        type: LogType.ERROR
         }
       await  this.logService.create(log);  
+    }
+  }
+
+  async getAdmin() {
+    try {
+      const admin = await this.userRepository.findOne({ where: {roleId: ROLE.ADMIN}});
+      return admin
+    } catch(e) {
+      // log to mongo
+      const log = {
+        message: `faild write into db ${e}`,
+        where: 'user.servise.ts (getAdmin())',
+        type: LogType.ERROR
+      }
+      await this.logService.create(log);  
     }
   }
 }

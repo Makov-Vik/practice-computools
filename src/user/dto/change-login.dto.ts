@@ -1,10 +1,10 @@
-import { IsString, Length, IsEmail } from 'class-validator';
-import { MUST_BE_STR, WRONG_EMAIL, MORE4LESS22 } from '../../constants';
+import { IsString, IsEmail } from 'class-validator';
+import * as Response from '../../response.messages';
 
 export class ChangeLoginDto {
   readonly name: string;
 
-  @IsString(MUST_BE_STR)
-  @IsEmail({}, WRONG_EMAIL)
+  @IsString(Response.MUST_BE_STR)
+  @IsEmail({}, Response.WRONG_EMAIL)
   readonly email: string;
 }

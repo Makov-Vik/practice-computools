@@ -1,10 +1,10 @@
-import { MUST_BE_STR } from '../../constants';
+import * as Response from '../../response.messages';
 import { IsString } from 'class-validator';
 
 export class CreateRoleDto {
-  @IsString(MUST_BE_STR)
+  @IsString(Response.MUST_BE_STR)
   readonly role: string;
 
-  @IsString(MUST_BE_STR)
+  @IsString(Response.MUST_BE_STR)
   readonly description: string;
 }

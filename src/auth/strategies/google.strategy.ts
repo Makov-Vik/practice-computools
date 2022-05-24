@@ -1,12 +1,8 @@
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, VerifyCallback } from 'passport-google-oauth20';
 import { config } from 'dotenv';
-
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/sequelize';
-import { User } from '../../user/user.model';
-import { RoleService } from '../../role/role.service';
-import { ENCODING_SALT, ROLE, ROLE_USER_NOT_FOUND } from '../../constants';
+import { Injectable } from '@nestjs/common';
+import { ENCODING_SALT } from '../../constants';
 import { UserService } from '../../user/user.service';
 import { AuthService } from '../auth.service';
 import * as bcrypt from 'bcryptjs';

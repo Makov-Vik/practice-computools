@@ -3,15 +3,17 @@ import { Role } from '../auth/checkRole.decorator';
 import { CreateTeamDto } from './dto/create-team.dto';
 import { TeamService } from './team.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { Request } from 'express';
+import { ROLE } from '../constants';
 
 @Controller('team')
 export class TeamController {
   constructor(private teamService: TeamService) {}
 
-  @Role('manager')
+  @Role(ROLE[ROLE.MANAGER])
   @UseGuards(JwtAuthGuard)
   @Post()
-  create(@Body() dto: CreateTeamDto, @Req() req: any) {
+  create(@Body() dto: CreateTeamDto, @Req() req: Request) {
     return this.teamService.createTeam(dto, req);
   }
 

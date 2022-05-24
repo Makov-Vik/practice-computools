@@ -1,5 +1,5 @@
 import * as request from 'supertest';
-import * as Response from '../src/response.messages';
+import { SUCCESS } from '../src/response.messages';
 import { generateNewUser } from './generateNewUser'
 import * as env from 'env-var';
 import * as dotenv from 'dotenv';
@@ -59,7 +59,7 @@ describe('user change login', () => {
     }))
     .body;
     
-    expect(resBan).toEqual(Response.SUCCESS);
+    expect(resBan).toEqual(SUCCESS);
     
     tokenNewPlayer = (await request('http://localhost:3030')
     .get('/auth/login')

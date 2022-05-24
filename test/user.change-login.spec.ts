@@ -1,13 +1,11 @@
 import * as request from 'supertest';
 import { faker } from '@faker-js/faker';
+import { generateNewUser } from './generateNewUser';
 
 describe('user change login', () => {
-  let tokenNewPlayer: any;
-  const newPlayer = {
-    "name": faker.name.firstName(),
-    "email": faker.internet.email(),
-    "password": "1234"
-  };
+  let tokenNewPlayer: string;
+  
+  const newPlayer = generateNewUser();
 
   beforeAll(async function() {
     const resRegistration = await request('http://localhost:3030')

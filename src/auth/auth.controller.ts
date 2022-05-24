@@ -1,11 +1,12 @@
-import { Body, Controller, Get, Param, Patch, Post, UseGuards, UsePipes, Req, Request } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, UseGuards, UsePipes, Req, Request, HttpException, HttpStatus } from '@nestjs/common';
 import { CreateUserDto } from '../user/dto/create-user.dto';
 import { AuthService } from './auth.service';
 import { ValidationPipe } from '../pipe/validation.pipe';
-import { JwtAuthGuard } from './jwt-auth.guard';
 import { UserService } from '../user/user.service';
 import { RequestService } from '../request/request.service';
 import { AuthGuard } from '@nestjs/passport';
+import * as Response from '../response.messages';
+import * as express from 'express';
 
 @Controller('auth')
 export class AuthController {
@@ -19,7 +20,7 @@ export class AuthController {
 
   @Get('/redirect')
   @UseGuards(AuthGuard('google'))
-  googleAuthRedirect(@Req() req: any) {
+  googleAuthRedirect(@Req() req: express.Request) {
     return req.user; // page with returned Login Token
   }
 
@@ -48,7 +49,11 @@ export class AuthController {
   @UsePipes(ValidationPipe)
   @Post('/registrationManager')
   async registrationManager(@Body() userDto: CreateUserDto) {
+    const admin = await this.userService.getAdmin();
+    if(!admin) {
+      return new HttpException(Response.RECIPIENT_NOT_FOUND, HttpStatus.NOT_FOUND)
+    }
     await this.authService.registration({ ...userDto, registered: false })
-    return await this.requestService.reqSignUpManager(userDto);
+    return await this.requestService.reqSignUpManager(userDto, admin);
   }
 }

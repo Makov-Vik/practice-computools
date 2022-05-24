@@ -1,16 +1,20 @@
 import * as request from 'supertest';
 import { faker } from '@faker-js/faker';
+import * as env from 'env-var';
+import * as dotenv from 'dotenv';
+dotenv.config({path: `.${env.get('NODE_ENV').required().asString()}.env`});
 
 describe('TeamController', () => {
-  let tokenManager: any;
+  let tokenManager: string;
+  
   const newTeam = {
       name: faker.name.lastName(),
       description: 'description'
   };
   const manager = {
-    "name": "manager",
-    "email": "manager@gmail.com",
-    "password": "1234",
+    name: env.get('MANAGER_NAME').required().asString(),
+    email: env.get('MANAGER_EMAIL').required().asString(),
+    password: env.get('MANAGER_PASSWORD').required().asString(),
   };
 
   beforeAll(async function() {

@@ -20,7 +20,7 @@ import { Request } from './request/request.model';
   providers: [],
   imports: [
     ConfigModule.forRoot({
-      envFilePath: '.env',
+      envFilePath: `.${env.get('NODE_ENV').required().asString()}.env`,
     }),
     MongooseModule.forRoot(env.get('MONGO_URI').required().asString()),
     SequelizeModule.forRoot({

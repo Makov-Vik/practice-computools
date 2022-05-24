@@ -5,8 +5,6 @@ import {
   DataType,
   ForeignKey,
   BelongsToMany,
-  BelongsTo,
-  HasMany,
   HasOne,
 } from 'sequelize-typescript';
 import { Role } from '../role/role.model';

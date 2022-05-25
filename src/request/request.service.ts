@@ -9,15 +9,17 @@ import { RequsetDto } from './dto/request.dto';
 import { DeleteFromTeamDto } from './dto/delete-from-team.dto';
 import { CreateUserDto } from '../user/dto/create-user.dto';
 import { LogService } from '../log/log.service';
-import { User } from 'src/user/user.model';
+import { User } from '../user/user.model';
 import * as Response from '../response.messages';
+import { EventGateway } from '../events/events.gateway';
 
 @Injectable()
 export class RequestService {
   constructor(@InjectModel(Request) private requestRepository: typeof Request, 
   private userService: UserService,
   private teamService: TeamService,
-  private logService: LogService) {}
+  private logService: LogService,
+  private readonly eventGateway: EventGateway) {}
 
   async getMyNotifications(req: any) {
     return await this.requestRepository.findAll( { where: {to: req.user.id}})
@@ -67,6 +69,10 @@ export class RequestService {
           type: LogType.CREATE
         }
         await this.logService.create(log);
+
+        // for notification
+        this.eventGateway.server.emit('requestJoinTeam', { from: req.user.id, description  });
+
         return request;
       } catch(e) {
         // log to mongo
@@ -125,6 +131,8 @@ export class RequestService {
         }
         await this.logService.create(log);
 
+        // for notification
+        this.eventGateway.server.emit('requestLeaveTeam', { from: req.user.id, description  });
         return request;         
       } catch(e) {
         // log to mongo

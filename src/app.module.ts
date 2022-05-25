@@ -14,6 +14,7 @@ import { LogModule } from './log/log.module';
 import { RequestModule } from './request/request.module';
 import * as env from 'env-var';
 import { Request } from './request/request.model';
+import { EventModule } from './events/events.module';
 
 @Module({
   controllers: [],
@@ -40,6 +41,7 @@ import { Request } from './request/request.model';
     AuthModule,
     LogModule,
     RequestModule,
+    EventModule,
   ],
 })
 export class AppModule {}

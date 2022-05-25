@@ -7,12 +7,14 @@ import { RequestController } from './request.controller';
 import { TeamModule } from '../team/team.module';
 import { AuthModule } from '../auth/auth.module';
 import { LogModule } from '../log/log.module';
+import { EventModule } from 'src/events/events.module';
 
 @Module({
   imports: [
     forwardRef(() => LogModule),
     forwardRef(() =>UserModule), 
     TeamModule, 
+    EventModule,
     forwardRef(() =>AuthModule),
     SequelizeModule.forFeature([Request])
   ],

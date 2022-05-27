@@ -8,6 +8,8 @@ import { TeamModule } from '../team/team.module';
 import { AuthModule } from '../auth/auth.module';
 import { LogModule } from '../log/log.module';
 import { EventModule } from 'src/events/events.module';
+import { RequestType } from './requestType.model';
+import { RequestStatus } from './requestStatus.model';
 
 @Module({
   imports: [
@@ -16,7 +18,7 @@ import { EventModule } from 'src/events/events.module';
     TeamModule, 
     EventModule,
     forwardRef(() =>AuthModule),
-    SequelizeModule.forFeature([Request])
+    SequelizeModule.forFeature([Request, RequestType, RequestStatus])
   ],
   providers: [RequestService],
   exports: [RequestService],

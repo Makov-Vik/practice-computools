@@ -4,9 +4,13 @@ import {
   Column,
   DataType,
   ForeignKey,
+  HasOne,
 } from 'sequelize-typescript';
 import { User } from '../user/user.model';
 import { PRIMARY_KEY, RequestStatus } from '../constants';
+import * as RequestStatusModel from './requestStatus.model';
+import { RequestType } from './requestType.model';
+
 interface CreateRequest {
   readonly from: number;
   readonly to: number;
@@ -35,4 +39,10 @@ export class Request extends Model<Request, CreateRequest> {
 
   @Column({ type: DataType.STRING })
   description: string;
+
+  @HasOne(() => RequestStatusModel.RequestStatus)
+  requestStatus: RequestStatusModel.RequestStatus[]
+
+  @HasOne(() => RequestType)
+  requestType: RequestType[]
 }

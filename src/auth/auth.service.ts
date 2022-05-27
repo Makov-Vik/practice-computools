@@ -15,6 +15,7 @@ import * as dotenv from 'dotenv';
 import * as env from 'env-var';
 import { User } from '../user/user.model';
 import { LogService } from '../log/log.service';
+import { EventGateway } from '../events/events.gateway';
 dotenv.config({path: `.${env.get('NODE_ENV').required().asString()}.env`});
 
 @Injectable()
@@ -22,7 +23,8 @@ export class AuthService {
   constructor(
     private userService: UserService,
     private jwtService: JwtService,
-    private logService: LogService
+    private logService: LogService,
+    //private readonly eventGateway: EventGateway
   ) {}
 
   async login(userDto: CreateUserDto) {
@@ -37,6 +39,13 @@ export class AuthService {
       type: LogType.UPDATE
     }
     await this.logService.create(log);
+
+    //this.eventGateway.server.emit('connection', {connect: 'success connect from /auth/login' })
+    // this.eventGateway.server.emit()
+    // handleConnection(client: any) {
+    //   console.log('id:', client.id)
+    //   client.emit('connection', 'Successfully connected to server');
+    // }
 
     return this.generateToken(user);
   }

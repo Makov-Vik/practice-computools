@@ -22,9 +22,6 @@ export class ValidationPipe implements PipeTransform {
 
     if (errors.length) {
       const messages = errors.map((err) => {
-
-        console.log(errors);
-        console.log(err.constraints)
         if (!err.constraints) {
           throw new HttpException(Response.VALIDATION, HttpStatus.BAD_REQUEST);;
         }

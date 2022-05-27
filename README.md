@@ -23,6 +23,9 @@ to clear the table of roles:
 npx sequelize-cli db:seed:undo:all
 ```
 
+*If you failed to make seeders on the first try, then you should eliminate it and recreate the database. Because when inserting into tables, a specific id is used, which violates the uniqueness value on subsequent insert attempts. An error similar to this might appear: ERROR: Duplicate key value violates the "role_pkey" unique constraint. Then recreate the database and run migration and seeders again.*
+
+
 ### Test
 Before running the tests, you must create 2 databases named **airsoft_test** in postgresql and mongodb. Make migrations and seeds, like previuse usecase, but use **airsoft_test** database in **./config/database.json** file.
 Specify the correct data in the **.test.env** file. 
@@ -32,4 +35,4 @@ Next, should create manager and one team in the postgresql database. This is nec
 (All configuration for admin, manager and team are **.test.env** file)
 So, for this run server with ```npm run start:for-test```, and then run one test with ```jest prepareToTest.spec.ts```.
 
-After succesfuly passed you should delete **prepareToTest.spec.ts** file and run real test with ```npm run test``` command.
+After successfully passed you should skipped test in **prepareToTest.spec.ts** file and run real test with ```npm run test``` command.

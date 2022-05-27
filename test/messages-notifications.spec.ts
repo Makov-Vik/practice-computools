@@ -8,6 +8,8 @@ dotenv.config({path: `.${env.get('NODE_ENV').required().asString()}.env`});
 describe('messages . notifications', () => {
   let tokenNewPlayer: string;
   let tokenManager: string;
+  const host = env.get('HOST').required().asString();
+  const port = env.get('PORT').required().asString();
 
   const manager = {
     name: env.get('MANAGER_NAME').required().asString(),
@@ -21,21 +23,21 @@ describe('messages . notifications', () => {
   const newPlayer = generateNewUser();
 
   beforeAll(async function() {
-    const resRegistration = await request('http://localhost:3030')
+    const resRegistration = await request(`http://${host}:${port}`)
     .post('/auth/registration')
     .send(newPlayer);
 
-    tokenNewPlayer = (await request('http://localhost:3030')
+    tokenNewPlayer = (await request(`http://${host}:${port}`)
     .get('/auth/login')
     .send(newPlayer))
     .body.token;
 
-    tokenManager = (await request('http://localhost:3030').get('/auth/login').send(manager)).body.token;
+    tokenManager = (await request(`http://${host}:${port}`).get('/auth/login').send(manager)).body.token;
   }, 10000);
 
   it('get /user/me', async () => {
 
-    const player = (await request('http://localhost:3030')
+    const player = (await request(`http://${host}:${port}`)
     .get('/user/me')
     .set('Authorization', `bearer ${tokenNewPlayer}`))
     .body;
@@ -53,7 +55,7 @@ describe('messages . notifications', () => {
 
   it('cancelRequest . get myMessages . get myNotifications', async () => {
 
-    const { body: [teamDB] } = (await request('http://localhost:3030')
+    const { body: [teamDB] } = (await request(`http://${host}:${port}`)
     .get('/team')
     .query({ name: `${team.name}` }))
     //.body[0];
@@ -64,7 +66,7 @@ describe('messages . notifications', () => {
       "headManager": expect.any(Number),
     });
 
-    const requestJoinTeam = (await request('http://localhost:3030')
+    const requestJoinTeam = (await request(`http://${host}:${port}`)
     .post('/user/joinTeam')
     .set('Authorization', `bearer ${tokenNewPlayer}`)
     .send({ to: teamDB.headManager, team: team.name }))
@@ -77,7 +79,7 @@ describe('messages . notifications', () => {
     })
 
 
-    const canceledRequest = (await request('http://localhost:3030')
+    const canceledRequest = (await request(`http://${host}:${port}`)
     .post('/user/cancelRequest')
     .set('Authorization', `bearer ${tokenNewPlayer}`)
     .send({ id: requestJoinTeam.id }))
@@ -86,7 +88,7 @@ describe('messages . notifications', () => {
     expect(canceledRequest).toEqual({ message: "access canceled" });
     
 
-    const checkcanceledRequest = (await request('http://localhost:3030')
+    const checkcanceledRequest = (await request(`http://${host}:${port}`)
     .get('/user/myMessages')
     .set('Authorization', `bearer ${tokenNewPlayer}`))
     .body;
@@ -100,7 +102,7 @@ describe('messages . notifications', () => {
     }]);
 
 
-    const checkManagerNotification = (await request('http://localhost:3030')
+    const checkManagerNotification = (await request(`http://${host}:${port}`)
     .get('/user/myNotifications')
     .set('Authorization', `bearer ${tokenManager}`))
     .body;

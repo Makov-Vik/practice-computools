@@ -8,7 +8,9 @@ dotenv.config({path: `.${env.get('NODE_ENV').required().asString()}.env`});
 
 describe('registration manager', () => {
   let tokenAdmin: string;
-
+  const host = env.get('HOST').required().asString();
+  const port = env.get('PORT').required().asString();
+  
   const admin = {
     name: env.get('ADMIN_NAME').required().asString(),
     email: env.get('ADMIN_EMAIL').required().asString(),
@@ -18,16 +20,16 @@ describe('registration manager', () => {
   const newManager = generateNewUser();
 
   beforeAll(async function() {
-    tokenAdmin = (await request('http://localhost:3030').get('/auth/login').send(admin)).body.token;
+    tokenAdmin = (await request(`http://${host}:${port}`).get('/auth/login').send(admin)).body.token;
   }, 10000);
 
   it('registration manager', async () => {
 
-    const registrManager = (await request('http://localhost:3030')
+    const registrManager = (await request(`http://${host}:${port}`)
     .post('/auth/registrationManager')
     .send(newManager)).body
 
-    const checkAdminNotification = (await request('http://localhost:3030')
+    const checkAdminNotification = (await request(`http://${host}:${port}`)
     .get('/user/myNotifications')
     .set('Authorization', `bearer ${tokenAdmin}`))
     .body;
@@ -38,7 +40,7 @@ describe('registration manager', () => {
     const pendingNotification = checkAdminNotification.filter((item: any) => item.status === RequestStatus.PENDING)
 
 
-    const acceptRegistration = (await request('http://localhost:3030')
+    const acceptRegistration = (await request(`http://${host}:${port}`)
     .post('/request/acceptRegistration')
     .set('Authorization', `bearer ${tokenAdmin}`)
     .send({ id: pendingNotification[0].id, from: pendingNotification[0].from, status: 1 }))
@@ -46,7 +48,7 @@ describe('registration manager', () => {
   
     expect(acceptRegistration).toEqual(Response.SUCCESS);
 
-    const tokenManager = (await request('http://localhost:3030')
+    const tokenManager = (await request(`http://${host}:${port}`)
     .get('/auth/login')
     .send(newManager)).body;
 

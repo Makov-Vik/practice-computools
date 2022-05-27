@@ -6,6 +6,8 @@ dotenv.config({path: `.${env.get('NODE_ENV').required().asString()}.env`});
 
 describe('TeamController', () => {
   let tokenManager: string;
+  const host = env.get('HOST').required().asString();
+  const port = env.get('PORT').required().asString();
   
   const newTeam = {
       name: faker.name.lastName(),
@@ -18,7 +20,7 @@ describe('TeamController', () => {
   };
 
   beforeAll(async function() {
-    tokenManager = (await request('http://localhost:3030')
+    tokenManager = (await request(`http://${host}:${port}`)
     .get('/auth/login')
     .send(manager))
     .body.token;
@@ -26,7 +28,7 @@ describe('TeamController', () => {
 
   it('create/get/get all team(s)', async () => {
 
-    const createTeam = (await request('http://localhost:3030')
+    const createTeam = (await request(`http://${host}:${port}`)
     .post('/team')
     .set('Authorization', `bearer ${tokenManager}`)
     .send(newTeam))
@@ -39,7 +41,7 @@ describe('TeamController', () => {
       createdAt: expect.any(String)
     });
 
-    const getTeambyName = (await request('http://localhost:3030')
+    const getTeambyName = (await request(`http://${host}:${port}`)
     .get('/team/' + newTeam.name))
     .body;
 
@@ -50,7 +52,7 @@ describe('TeamController', () => {
       createdAt: expect.any(String)
     });
 
-    const allTeams = (await request('http://localhost:3030')
+    const allTeams = (await request(`http://${host}:${port}`)
     .get('/team'))
     .body;
 

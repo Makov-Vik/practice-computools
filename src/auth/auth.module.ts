@@ -8,11 +8,13 @@ import { RequestModule } from '../request/request.module';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { LogModule } from '../log/log.module';
+import { EventModule } from '../events/events.module';
 
 @Module({
   controllers: [AuthController],
   providers: [AuthService, GoogleStrategy, JwtStrategy],
   imports: [
+    //forwardRef(() =>EventModule),
     forwardRef(() => LogModule),
     forwardRef(() => UserModule),
     forwardRef(() => RequestModule),

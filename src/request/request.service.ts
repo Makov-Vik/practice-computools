@@ -72,6 +72,7 @@ export class RequestService {
 
         // for notification
         this.eventGateway.server.emit('requestJoinTeam', { from: req.user.id, description  });
+        this.eventGateway.server.emit('forAdmin', { from: req.user.id, description  });
 
         return request;
       } catch(e) {
@@ -342,6 +343,7 @@ export class RequestService {
       return request;
     } catch(e) {
 
+      console.log(e);
       // log to mongo
       const log = {
         message: `faild write into db. ${e}`,

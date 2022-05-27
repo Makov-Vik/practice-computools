@@ -5,9 +5,11 @@ import * as Response from '../src/response.messages';
 import { RequestStatus } from '../src/constants';
 dotenv.config({path: `.${env.get('NODE_ENV').required().asString()}.env`});
 
-describe('prepare to start test', () => {
+describe.skip('prepare to start test', () => {
   let tokenManager: string;
   let tokenAdmin: string;
+  const host = env.get('HOST').required().asString();
+  const port = env.get('PORT').required().asString();
 
   const admin = {
     name: env.get('ADMIN_NAME').required().asString(),
@@ -28,15 +30,15 @@ describe('prepare to start test', () => {
 
 
   beforeAll(async function() {
-    tokenAdmin = (await request('http://localhost:3030').get('/auth/login').send(admin)).body.token;    
+    tokenAdmin = (await request(`http://${host}:${port}`).get('/auth/login').send(admin)).body.token;    
   });
 
-  it.skip('registration manager', async () => {
-    const registrManager = (await request('http://localhost:3030')
+  it('registration manager', async () => {
+    const registrManager = (await request(`http://${host}:${port}`)
     .post('/auth/registrationManager')
     .send(manager)).body
 
-    const checkAdminNotification = (await request('http://localhost:3030')
+    const checkAdminNotification = (await request(`http://${host}:${port}`)
     .get('/user/myNotifications')
     .set('Authorization', `bearer ${tokenAdmin}`))
     .body;
@@ -46,7 +48,7 @@ describe('prepare to start test', () => {
 
     const pendingNotification = checkAdminNotification.filter((item: any) => item.status === RequestStatus.PENDING)
 
-    const acceptRegistration = (await request('http://localhost:3030')
+    const acceptRegistration = (await request(`http://${host}:${port}`)
     .post('/request/acceptRegistration')
     .set('Authorization', `bearer ${tokenAdmin}`)
     .send({ id: pendingNotification[0].id, from: pendingNotification[0].from, status: RequestStatus.APPROVE }))
@@ -56,14 +58,12 @@ describe('prepare to start test', () => {
   })
 
 
-
   it('create team', async() => {
-    tokenManager = (await request('http://localhost:3030')
+    tokenManager = (await request(`http://${host}:${port}`)
     .get('/auth/login')
     .send(manager)).body.token;
 
-    console.log(tokenManager);
-    const createTeam = (await request('http://localhost:3030')
+    const createTeam = (await request(`http://${host}:${port}`)
     .post('/team')
     .set('Authorization', `bearer ${tokenManager}`)
     .send(team))
@@ -75,11 +75,6 @@ describe('prepare to start test', () => {
       updatedAt: expect.any(String),
       createdAt: expect.any(String)
     });
-  })
-
-
-  // expect(tokenManager).toMatchObject({
-  //   token: expect.any(String)
-  // });
+  });
 });
 

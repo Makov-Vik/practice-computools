@@ -1,13 +1,7 @@
 import { faker } from '@faker-js/faker';
 
-const generateNewUser = () => {
-  const newPlayer = {
+export const generateNewUser = () => ({
   "name": faker.name.firstName(),
   "email": faker.internet.email(),
   "password": "1234"
-  }
-
-  return newPlayer;
-};
-
-export { generateNewUser }
+});

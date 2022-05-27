@@ -3,36 +3,14 @@ import {Sequelize_migration} from "../util/inteface";
 
 
 export const up = async (queryInterface: QueryInterface, Sequelize: Sequelize_migration) => {
-    await queryInterface.createTable('request', {
+    await queryInterface.createTable('requestType', {
       id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
         autoIncrement: true
       },
-      from: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: {
-          model: 'user',
-          key: 'id'
-        },
-      },
-      to: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: {
-          model: 'user',
-          key: 'id'
-        },
-      },
-      status: {
-        type: Sequelize.INTEGER
-      },
       type: {
-        type:  Sequelize.INTEGER
-      },
-      description: {
-        type: Sequelize.STRING
+        type:  Sequelize.STRING
       },
       createdAt: {
         type: Sequelize.DATE,
@@ -47,5 +25,5 @@ export const up = async (queryInterface: QueryInterface, Sequelize: Sequelize_mi
 
   }
 export const down = async (queryInterface: QueryInterface, _Sequelize: Sequelize_migration) => {
-  await queryInterface.dropTable('request', {});
+  await queryInterface.dropTable('requestType', {});
 }

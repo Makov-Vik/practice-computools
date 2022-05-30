@@ -8,15 +8,21 @@ import { JwtService } from '@nestjs/jwt';
 import { LogType, ROLE } from '../constants';
 import { LogService } from '../log/log.service';
 
+type Map = {
+  [key: string]: string
+};
+
+
 @WebSocketGateway({
   cors: {
     origin: '*',
   },
 })
 export class EventGateway {
-  public socketIdMap: any = {};
 
-  constructor(private jwtService: JwtService, private logService: LogService,) {}
+  public socketIdMap: Map = {};
+
+  constructor(private jwtService: JwtService, private logService: LogService) {}
 
   @WebSocketServer()
   server: Server;
@@ -33,32 +39,30 @@ export class EventGateway {
     try {
       user = this.jwtService.verify(token);
 
-      if(user.roleId === ROLE.ADMIN) {
-        this.socketIdMap['admin'] = socket.id
-      }
-      else if (user.roleId === ROLE.MANAGER) {
-        this.socketIdMap[`manager${user.id}`] = socket.id;
-      }
-      else {
-        this.socketIdMap[`player${user.id}`] = socket.id;
-      };
+      switch (user.roleId) {
+        case ROLE.ADMIN: {
+          this.socketIdMap['admin'] = socket.id
+        }
+        case ROLE.MANAGER: {
+          this.socketIdMap[`manager${user.id}`] = socket.id
+        }
+        case ROLE.PLAYER: {
+          this.socketIdMap[`player${user.id}`] = socket.id
+        }  
 
+      }
       console.log('id:', socket.id);
       socket.emit('connection', 'Successfully connected to server');
-  }
-    catch(e) {
-    // log to mongo
-    const log = {
-      message: `user failed connecting by socket`,
-      where: 'events.gateway.ts (handleConnection())',
-      type: LogType.ERROR
-    }
-    await this.logService.create(log);
+    } catch(e) {
+      // log to mongo
+      const log = {
+        message: `user failed connecting by socket`,
+        where: 'events.gateway.ts (handleConnection())',
+        type: LogType.ERROR
+      }
+      await this.logService.create(log);
       socket.disconnect();
     }
-    
-     
-    
   }
 
   forAdmin(data: any) {

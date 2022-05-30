@@ -24,7 +24,6 @@ export class AuthService {
     private userService: UserService,
     private jwtService: JwtService,
     private logService: LogService,
-    //private readonly eventGateway: EventGateway
   ) {}
 
   async login(userDto: CreateUserDto) {
@@ -39,13 +38,6 @@ export class AuthService {
       type: LogType.UPDATE
     }
     await this.logService.create(log);
-
-    //this.eventGateway.server.emit('connection', {connect: 'success connect from /auth/login' })
-    // this.eventGateway.server.emit()
-    // handleConnection(client: any) {
-    //   console.log('id:', client.id)
-    //   client.emit('connection', 'Successfully connected to server');
-    // }
 
     return this.generateToken(user);
   }

@@ -4,20 +4,19 @@ import { generateNewUser } from './generateNewUser';
 import * as env from 'env-var';
 import * as dotenv from 'dotenv';
 dotenv.config({path: `.${env.get('NODE_ENV').required().asString()}.env`});
+import { baseString } from './createRequestString';
 
 describe('user change login', () => {
   let tokenNewPlayer: string;
-  const host = env.get('HOST').required().asString();
-  const port = env.get('PORT').required().asString();
   
   const newPlayer = generateNewUser();
 
   beforeAll(async function() {
-    const resRegistration = await request(`http://${host}:${port}`)
+    const resRegistration = await request(`${baseString}`)
     .post('/auth/registration')
     .send(newPlayer);
 
-    tokenNewPlayer = (await request(`http://${host}:${port}`)
+    tokenNewPlayer = (await request(`${baseString}`)
     .get('/auth/login')
     .send(newPlayer))
     .body.token;
@@ -26,7 +25,7 @@ describe('user change login', () => {
   it('patch /user/changeLogin', async () => {
     const newEmail = faker.internet.email();
     
-    const resError = (await request(`http://${host}:${port}`)
+    const resError = (await request(`${baseString}`)
     .patch('/user/changeLogin')
     .set('Authorization', `bearer ${tokenNewPlayer}`)
     .send({email: newPlayer.email}))
@@ -34,7 +33,7 @@ describe('user change login', () => {
 
     expect(resError).toEqual({ message: 'user with same email already exist' });
 
-    const resAccept = (await request(`http://${host}:${port}`)
+    const resAccept = (await request(`${baseString}`)
     .patch('/user/changeLogin')
     .set('Authorization', `bearer ${tokenNewPlayer}`)
     .send({ email: newEmail }))
@@ -42,7 +41,7 @@ describe('user change login', () => {
     
     expect(resAccept).toEqual({message: "operation success"});
 
-    const checkChangeEmail = (await request(`http://${host}:${port}`)
+    const checkChangeEmail = (await request(`${baseString}`)
     .get('/user/me')
     .set('Authorization', `bearer ${tokenNewPlayer}`))
     .body;

@@ -4,12 +4,11 @@ import * as dotenv from 'dotenv';
 import * as Response from '../src/response.messages';
 import { RequestStatus } from '../src/constants';
 dotenv.config({path: `.${env.get('NODE_ENV').required().asString()}.env`});
+import { baseString } from './createRequestString';
 
 describe.skip('prepare to start test', () => {
   let tokenManager: string;
   let tokenAdmin: string;
-  const host = env.get('HOST').required().asString();
-  const port = env.get('PORT').required().asString();
 
   const admin = {
     name: env.get('ADMIN_NAME').required().asString(),
@@ -30,15 +29,15 @@ describe.skip('prepare to start test', () => {
 
 
   beforeAll(async function() {
-    tokenAdmin = (await request(`http://${host}:${port}`).get('/auth/login').send(admin)).body.token;    
+    tokenAdmin = (await request(`${baseString}`).get('/auth/login').send(admin)).body.token;    
   });
 
   it('registration manager', async () => {
-    const registrManager = (await request(`http://${host}:${port}`)
+    const registrManager = (await request(`${baseString}`)
     .post('/auth/registrationManager')
     .send(manager)).body
 
-    const checkAdminNotification = (await request(`http://${host}:${port}`)
+    const checkAdminNotification = (await request(`${baseString}`)
     .get('/user/myNotifications')
     .set('Authorization', `bearer ${tokenAdmin}`))
     .body;
@@ -48,7 +47,7 @@ describe.skip('prepare to start test', () => {
 
     const pendingNotification = checkAdminNotification.filter((item: any) => item.status === RequestStatus.PENDING)
 
-    const acceptRegistration = (await request(`http://${host}:${port}`)
+    const acceptRegistration = (await request(`${baseString}`)
     .post('/request/acceptRegistration')
     .set('Authorization', `bearer ${tokenAdmin}`)
     .send({ id: pendingNotification[0].id, from: pendingNotification[0].from, status: RequestStatus.APPROVE }))
@@ -59,11 +58,11 @@ describe.skip('prepare to start test', () => {
 
 
   it('create team', async() => {
-    tokenManager = (await request(`http://${host}:${port}`)
+    tokenManager = (await request(`${baseString}`)
     .get('/auth/login')
     .send(manager)).body.token;
 
-    const createTeam = (await request(`http://${host}:${port}`)
+    const createTeam = (await request(`${baseString}`)
     .post('/team')
     .set('Authorization', `bearer ${tokenManager}`)
     .send(team))

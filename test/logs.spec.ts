@@ -2,11 +2,10 @@ import * as request from 'supertest';
 import * as env from 'env-var';
 import * as dotenv from 'dotenv';
 dotenv.config({path: `.${env.get('NODE_ENV').required().asString()}.env`});
+import { baseString } from './createRequestString';
 
 describe('log', () => {
   let tokenAdmin: string;
-  const host = env.get('HOST').required().asString();
-  const port = env.get('PORT').required().asString();
   
   const admin = {
     name: env.get('ADMIN_NAME').required().asString(),
@@ -16,7 +15,7 @@ describe('log', () => {
 
 
   beforeAll(async function() {
-    tokenAdmin = (await request(`http://${host}:${port}`).get('/auth/login').send(admin)).body.token;
+    tokenAdmin = (await request(`${baseString}`).get('/auth/login').send(admin)).body.token;
   }, 10000);
 
   it('post/get/getType/delete  log', async () => {
@@ -26,7 +25,7 @@ describe('log', () => {
       type: 'error',
       where: 'everywhere'
     }
-    const createLog = (await request(`http://${host}:${port}`)
+    const createLog = (await request(`${baseString}`)
     .post('/log')
     .set('Authorization', `bearer ${tokenAdmin}`)
     .send(log))
@@ -34,7 +33,7 @@ describe('log', () => {
 
     expect(createLog).toMatchObject(log);
 
-    const getLogs = (await request(`http://${host}:${port}`)
+    const getLogs = (await request(`${baseString}`)
     .get('/log')
     .set('Authorization', `bearer ${tokenAdmin}`))
     .body;
@@ -42,7 +41,7 @@ describe('log', () => {
     expect(getLogs).toBeDefined();
     expect(getLogs).not.toEqual([]);
 
-    const getLogType = await request(`http://${host}:${port}`)
+    const getLogType = await request(`${baseString}`)
     .get('/log/type')
     .set('Authorization', `bearer ${tokenAdmin}`)
     .query({type: log.type})
@@ -50,7 +49,7 @@ describe('log', () => {
     expect(getLogType).toBeDefined();
     expect(getLogType).not.toEqual([]);
 
-    const checkDeleteLog = (await request(`http://${host}:${port}`)
+    const checkDeleteLog = (await request(`${baseString}`)
     .delete('/log/one')
     .set('Authorization', `bearer ${tokenAdmin}`)
     .send({id: createLog._id}))

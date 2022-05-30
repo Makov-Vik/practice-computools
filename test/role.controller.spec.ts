@@ -3,11 +3,10 @@ import * as env from 'env-var';
 import * as dotenv from 'dotenv';
 import { ROLE } from '../src/constants';
 dotenv.config({path: `.${env.get('NODE_ENV').required().asString()}.env`});
+import { baseString } from './createRequestString';
 
 describe('RoleController', () => {
   let tokenAdmin: string;
-  const host = env.get('HOST').required().asString();
-  const port = env.get('PORT').required().asString();
   
   const admin = {
     name: env.get('ADMIN_NAME').required().asString(),
@@ -17,12 +16,12 @@ describe('RoleController', () => {
 
 
   beforeAll(async function() {
-    tokenAdmin = (await request(`http://${host}:${port}`).get('/auth/login').send(admin)).body.token;
+    tokenAdmin = (await request(`${baseString}`).get('/auth/login').send(admin)).body.token;
   }, 10000);
 
   it('get role', async () => {
 
-    const respondGetRole = (await request(`http://${host}:${port}`)
+    const respondGetRole = (await request(`${baseString}`)
     .get('/role')
     .set('Authorization', `bearer ${tokenAdmin}`)
     .send({ role: ROLE[ROLE.PLAYER] }))
@@ -38,7 +37,7 @@ describe('RoleController', () => {
 
   it('get /role/all', async () => {
 
-    const respondGetAllRole = (await request(`http://${host}:${port}`)
+    const respondGetAllRole = (await request(`${baseString}`)
     .get('/role/all')
     .set('Authorization', `bearer ${tokenAdmin}`))
     .body;

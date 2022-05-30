@@ -5,11 +5,10 @@ import * as env from 'env-var';
 import * as dotenv from 'dotenv';
 import { generateNewUser } from './generateNewUser';
 dotenv.config({path: `.${env.get('NODE_ENV').required().asString()}.env`});
+import { baseString } from './createRequestString';
 
 describe('registration manager', () => {
   let tokenAdmin: string;
-  const host = env.get('HOST').required().asString();
-  const port = env.get('PORT').required().asString();
   
   const admin = {
     name: env.get('ADMIN_NAME').required().asString(),
@@ -20,16 +19,16 @@ describe('registration manager', () => {
   const newManager = generateNewUser();
 
   beforeAll(async function() {
-    tokenAdmin = (await request(`http://${host}:${port}`).get('/auth/login').send(admin)).body.token;
+    tokenAdmin = (await request(`${baseString}`).get('/auth/login').send(admin)).body.token;
   }, 10000);
 
   it('registration manager', async () => {
 
-    const registrManager = (await request(`http://${host}:${port}`)
+    const registrManager = (await request(`${baseString}`)
     .post('/auth/registrationManager')
     .send(newManager)).body
 
-    const checkAdminNotification = (await request(`http://${host}:${port}`)
+    const checkAdminNotification = (await request(`${baseString}`)
     .get('/user/myNotifications')
     .set('Authorization', `bearer ${tokenAdmin}`))
     .body;
@@ -40,7 +39,7 @@ describe('registration manager', () => {
     const pendingNotification = checkAdminNotification.filter((item: any) => item.status === RequestStatus.PENDING)
 
 
-    const acceptRegistration = (await request(`http://${host}:${port}`)
+    const acceptRegistration = (await request(`${baseString}`)
     .post('/request/acceptRegistration')
     .set('Authorization', `bearer ${tokenAdmin}`)
     .send({ id: pendingNotification[0].id, from: pendingNotification[0].from, status: 1 }))
@@ -48,7 +47,7 @@ describe('registration manager', () => {
   
     expect(acceptRegistration).toEqual(Response.SUCCESS);
 
-    const tokenManager = (await request(`http://${host}:${port}`)
+    const tokenManager = (await request(`${baseString}`)
     .get('/auth/login')
     .send(newManager)).body;
 

@@ -5,20 +5,19 @@ import { generateNewUser } from './generateNewUser';
 import * as env from 'env-var';
 import * as dotenv from 'dotenv';
 dotenv.config({path: `.${env.get('NODE_ENV').required().asString()}.env`});
+import { baseString } from './createRequestString';
 
 describe('upload-get image', () => {
   let tokenNewPlayer: string;
-  const host = env.get('HOST').required().asString();
-  const port = env.get('PORT').required().asString();
   
   const newPlayer = generateNewUser();
 
   beforeAll(async function() {
-    const resRegistration = await request(`http://${host}:${port}`)
+    const resRegistration = await request(`${baseString}`)
     .post('/auth/registration')
     .send(newPlayer);
 
-    tokenNewPlayer = (await request(`http://${host}:${port}`)
+    tokenNewPlayer = (await request(`${baseString}`)
     .get('/auth/login')
     .send(newPlayer))
     .body.token;
@@ -27,7 +26,7 @@ describe('upload-get image', () => {
 
   it('post /user/image', async () => {
 
-    const newImage = (await request(`http://${host}:${port}`)
+    const newImage = (await request(`${baseString}`)
     .post('/user/image')
     .set('Authorization', `bearer ${tokenNewPlayer}`)
     .attach('image', path.resolve(__dirname, './okay.jpg')))
@@ -35,7 +34,7 @@ describe('upload-get image', () => {
 
     expect(newImage).toEqual(Response.SUCCESS);
 
-    const newPlayerFromDB = (await request(`http://${host}:${port}`)
+    const newPlayerFromDB = (await request(`${baseString}`)
     .get('/user/me')
     .set('Authorization', `bearer ${tokenNewPlayer}`))
     .body;
@@ -44,7 +43,7 @@ describe('upload-get image', () => {
     expect(newPlayerFromDB.pathPhoto).not.toBeNull;
 
     
-    const getImage = (await request(`http://${host}:${port}`)
+    const getImage = (await request(`${baseString}`)
     .get('/user/image')
     .set('Authorization', `bearer ${tokenNewPlayer}`));
 

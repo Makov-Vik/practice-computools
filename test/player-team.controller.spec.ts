@@ -5,12 +5,11 @@ import * as env from 'env-var';
 import * as dotenv from 'dotenv';
 import { generateNewUser } from './generateNewUser';
 dotenv.config({path: `.${env.get('NODE_ENV').required().asString()}.env`});
+import { baseString } from './createRequestString';
 
 describe('palyer-team', () => {
   let tokenNewPlayer: string;
   let tokenManager: string;
-  const host = env.get('HOST').required().asString();
-  const port = env.get('PORT').required().asString();
   
   const manager = {
     name: env.get('MANAGER_NAME').required().asString(),
@@ -25,21 +24,21 @@ describe('palyer-team', () => {
 
   beforeAll(async function() {
 
-    const resRegistration = await request(`http://${host}:${port}`)
+    const resRegistration = await request(`${baseString}`)
     .post('/auth/registration')
     .send(newPlayer);
 
-    tokenNewPlayer = (await request(`http://${host}:${port}`)
+    tokenNewPlayer = (await request(`${baseString}`)
     .get('/auth/login')
     .send(newPlayer))
     .body.token;
 
-    tokenManager = (await request(`http://${host}:${port}`).get('/auth/login').send(manager)).body.token;
+    tokenManager = (await request(`${baseString}`).get('/auth/login').send(manager)).body.token;
   }, 10000);
 
   it('create, accept request for join, leave team. get team by name', async () => {
 
-    const teamDB = (await request(`http://${host}:${port}`)
+    const teamDB = (await request(`${baseString}`)
     .get('/team')
     .query({ name: `${team.name}` }))
     .body[0];
@@ -51,7 +50,7 @@ describe('palyer-team', () => {
     });
 
 
-    const requestJoinTeam = (await request(`http://${host}:${port}`)
+    const requestJoinTeam = (await request(`${baseString}`)
     .post('/user/joinTeam')
     .set('Authorization', `bearer ${tokenNewPlayer}`)
     .send({ to: teamDB.headManager, team: team.name }))
@@ -63,7 +62,7 @@ describe('palyer-team', () => {
       status: RequestStatus.PENDING,
     })
 
-    const acceptJoin = await request(`http://${host}:${port}`)
+    const acceptJoin = await request(`${baseString}`)
     .post('/request/join')
     .set('Authorization', `bearer ${tokenManager}`)
     .send({ id: requestJoinTeam.id, from: requestJoinTeam.from, description: requestJoinTeam.description });
@@ -71,7 +70,7 @@ describe('palyer-team', () => {
     expect(acceptJoin.body).toEqual(Response.ACCESS_JOIN);
     
 
-    const checkAcceptJoin = (await request(`http://${host}:${port}`)
+    const checkAcceptJoin = (await request(`${baseString}`)
     .get('/user/byEmail')
     .send({ email: newPlayer.email }))
     .body;
@@ -81,7 +80,7 @@ describe('palyer-team', () => {
 
     
     // leave operations
-    const requestLeavTeam = (await request(`http://${host}:${port}`)
+    const requestLeavTeam = (await request(`${baseString}`)
     .post('/user/leaveTeam')
     .set('Authorization', `bearer ${tokenNewPlayer}`)
     .send({ to: teamDB.headManager, team: team.name }))
@@ -94,14 +93,14 @@ describe('palyer-team', () => {
     });
 
 
-    const acceptLeave = await request(`http://${host}:${port}`)
+    const acceptLeave = await request(`${baseString}`)
     .post('/request/leave')
     .set('Authorization', `bearer ${tokenManager}`)
     .send({ id: requestLeavTeam.id, from: requestLeavTeam.from, description: requestLeavTeam.description });
 
     expect(acceptLeave.body).toEqual(Response.ACCESS_LEAVE);
 
-    const checkAcceptLeave = (await request(`http://${host}:${port}`)
+    const checkAcceptLeave = (await request(`${baseString}`)
     .get('/user/byEmail')
     .send({ email: newPlayer.email }))
     .body;
@@ -111,7 +110,7 @@ describe('palyer-team', () => {
 
   it('forced deletion of a user. post /request/delete', async () => {
 
-    const teamDB = (await request(`http://${host}:${port}`)
+    const teamDB = (await request(`${baseString}`)
     .get('/team')
     .query({ name: `${team.name}` }))
     .body[0];
@@ -122,7 +121,7 @@ describe('palyer-team', () => {
       "headManager": expect.any(Number),
     });
 
-    const requestJoinTeam = (await request(`http://${host}:${port}`)
+    const requestJoinTeam = (await request(`${baseString}`)
     .post('/user/joinTeam')
     .set('Authorization', `bearer ${tokenNewPlayer}`)
     .send({ to: teamDB.headManager, team: team.name }))
@@ -134,14 +133,14 @@ describe('palyer-team', () => {
       status: RequestStatus.PENDING,
     })
 
-    const acceptJoin = await request(`http://${host}:${port}`)
+    const acceptJoin = await request(`${baseString}`)
     .post('/request/join')
     .set('Authorization', `bearer ${tokenManager}`)
     .send({ id: requestJoinTeam.id, from: requestJoinTeam.from, description: requestJoinTeam.description });
 
     expect(acceptJoin.body).toEqual(Response.ACCESS_JOIN);
 
-    const checkAcceptJoin = (await request(`http://${host}:${port}`)
+    const checkAcceptJoin = (await request(`${baseString}`)
     .get('/user/byEmail')
     .send({ email: newPlayer.email }))
     .body;
@@ -151,12 +150,12 @@ describe('palyer-team', () => {
 
 
     // forced deletion of a user
-    const deletionPlayer = await request(`http://${host}:${port}`)
+    const deletionPlayer = await request(`${baseString}`)
     .post('/request/delete')
     .set('Authorization', `bearer ${tokenManager}`)
     .send({ team: teamDB.name, player: requestJoinTeam.from });
 
-    const checkDeletionPlayer = (await request(`http://${host}:${port}`)
+    const checkDeletionPlayer = (await request(`${baseString}`)
     .get('/user/byEmail')
     .send({ email: newPlayer.email }))
     .body;

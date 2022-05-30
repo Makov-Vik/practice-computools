@@ -3,11 +3,10 @@ import { faker } from '@faker-js/faker';
 import * as env from 'env-var';
 import * as dotenv from 'dotenv';
 dotenv.config({path: `.${env.get('NODE_ENV').required().asString()}.env`});
+import { baseString } from './createRequestString';
 
 describe('TeamController', () => {
   let tokenManager: string;
-  const host = env.get('HOST').required().asString();
-  const port = env.get('PORT').required().asString();
   
   const newTeam = {
       name: faker.name.lastName(),
@@ -20,7 +19,7 @@ describe('TeamController', () => {
   };
 
   beforeAll(async function() {
-    tokenManager = (await request(`http://${host}:${port}`)
+    tokenManager = (await request(`${baseString}`)
     .get('/auth/login')
     .send(manager))
     .body.token;
@@ -28,7 +27,7 @@ describe('TeamController', () => {
 
   it('create/get/get all team(s)', async () => {
 
-    const createTeam = (await request(`http://${host}:${port}`)
+    const createTeam = (await request(`${baseString}`)
     .post('/team')
     .set('Authorization', `bearer ${tokenManager}`)
     .send(newTeam))
@@ -41,7 +40,7 @@ describe('TeamController', () => {
       createdAt: expect.any(String)
     });
 
-    const getTeambyName = (await request(`http://${host}:${port}`)
+    const getTeambyName = (await request(`${baseString}`)
     .get('/team/' + newTeam.name))
     .body;
 
@@ -52,7 +51,7 @@ describe('TeamController', () => {
       createdAt: expect.any(String)
     });
 
-    const allTeams = (await request(`http://${host}:${port}`)
+    const allTeams = (await request(`${baseString}`)
     .get('/team'))
     .body;
 

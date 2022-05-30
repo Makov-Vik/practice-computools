@@ -4,13 +4,12 @@ import { generateNewUser } from './generateNewUser'
 import * as env from 'env-var';
 import * as dotenv from 'dotenv';
 dotenv.config({path: `.${env.get('NODE_ENV').required().asString()}.env`});
+import { baseString } from './createRequestString';
 
 
 describe('user change login', () => {
   let tokenNewPlayer: string;
   let tokenManager: string;
-  const host = env.get('HOST').required().asString();
-  const port = env.get('PORT').required().asString();
 
   const manager = {
     name: env.get('MANAGER_NAME').required().asString(),
@@ -20,22 +19,22 @@ describe('user change login', () => {
   const newPlayer = generateNewUser();
 
   beforeAll(async function() {
-    const resRegistration = await request(`http://${host}:${port}`)
+    const resRegistration = await request(`${baseString}`)
     .post('/auth/registration')
     .send(newPlayer);
 
-    tokenNewPlayer = (await request(`http://${host}:${port}`)
+    tokenNewPlayer = (await request(`${baseString}`)
     .get('/auth/login')
     .send(newPlayer))
     .body.token;
 
-    tokenManager = (await request(`http://${host}:${port}`).get('/auth/login').send(manager)).body.token;
+    tokenManager = (await request(`${baseString}`).get('/auth/login').send(manager)).body.token;
   }, 10000);
 
   it('patch /user/ban', async () => {
 
 
-    const player = (await request(`http://${host}:${port}`)
+    const player = (await request(`${baseString}`)
     .get('/user/me')
     .set('Authorization', `bearer ${tokenNewPlayer}`))
     .body;
@@ -52,7 +51,7 @@ describe('user change login', () => {
 
     const banReason = 'said the earth is flat';
 
-    const resBan = (await request(`http://${host}:${port}`)
+    const resBan = (await request(`${baseString}`)
     .patch('/user/ban')
     .set('Authorization', `bearer ${tokenManager}`)
     .send({
@@ -64,12 +63,12 @@ describe('user change login', () => {
     
     expect(resBan).toEqual(Response.SUCCESS);
     
-    tokenNewPlayer = (await request(`http://${host}:${port}`)
+    tokenNewPlayer = (await request(`${baseString}`)
     .get('/auth/login')
     .send(newPlayer))
     .body.token;
 
-    const playerAfterBan = (await request(`http://${host}:${port}`)
+    const playerAfterBan = (await request(`${baseString}`)
     .get('/user/me')
     .set('Authorization', `bearer ${tokenNewPlayer}`))
     .body;

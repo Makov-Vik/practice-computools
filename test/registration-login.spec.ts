@@ -3,11 +3,10 @@ import * as env from 'env-var';
 import * as dotenv from 'dotenv';
 import { generateNewUser } from './generateNewUser';
 dotenv.config({path: `.${env.get('NODE_ENV').required().asString()}.env`});
+import { baseString } from './createRequestString';
 
 describe('registration . login', () => {
   let tokenAdmin: string;
-  const host = env.get('HOST').required().asString();
-  const port = env.get('PORT').required().asString();
   
   const admin = {
     name: env.get('ADMIN_NAME').required().asString(),
@@ -16,17 +15,17 @@ describe('registration . login', () => {
   };
 
   beforeAll(async function() {
-    tokenAdmin = (await request(`http://${host}:${port}`).get('/auth/login').send(admin)).body.token;
+    tokenAdmin = (await request(`${baseString}`).get('/auth/login').send(admin)).body.token;
   }, 10000);
 
   it('registration and login', async () => {
     const newPlayer = generateNewUser()
 
-    const resRegistration = await request(`http://${host}:${port}`)
+    const resRegistration = await request(`${baseString}`)
     .post('/auth/registration')
     .send(newPlayer);
 
-    const checkUser = await request(`http://${host}:${port}`)
+    const checkUser = await request(`${baseString}`)
     .get('/user/byEmail')
     .send({ email: newPlayer.email });
 
@@ -35,7 +34,7 @@ describe('registration . login', () => {
     });
     expect(checkUser.body.email).toBe(newPlayer.email);
 
-    const resLogin = await request(`http://${host}:${port}`)
+    const resLogin = await request(`${baseString}`)
     .get('/auth/login')
     .send(newPlayer);
 

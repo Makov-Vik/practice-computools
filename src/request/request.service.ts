@@ -30,7 +30,6 @@ export class RequestService {
   }
 
   async requestJoinTeam(req: any, input: CreateRequsetDto) {
-    // or recievd only 'team' in input and search manager throught team ?????????????????
     const team = await this.teamService.getTeamByName(input.team);
     if(!team) {
       throw new HttpException(Response.NO_SUCH_TEAM, HttpStatus.NOT_FOUND);
@@ -71,8 +70,8 @@ export class RequestService {
         await this.logService.create(log);
 
         // for notification
-        this.eventGateway.server.emit('requestJoinTeam', { from: req.user.id, description  });
-        this.eventGateway.server.emit('forAdmin', { from: req.user.id, description  });
+        this.eventGateway.forAdmin({ from: req.user.id, description, type: RequestType[RequestType.JOIN] });
+        this.eventGateway.forManager(input.to, { from: req.user.id, description, type: RequestType[RequestType.JOIN] });
 
         return request;
       } catch(e) {
@@ -92,7 +91,6 @@ export class RequestService {
   }
 
   async requestLeaveTeam(req: any, input: CreateRequsetDto) {
-    // or recievd only 'team' in input and search manager throught team ?????????????????
     const team = await this.teamService.getTeamByName(input.team);
     if(!team) {
       throw new HttpException(Response.NO_SUCH_TEAM, HttpStatus.NOT_FOUND);
@@ -133,7 +131,9 @@ export class RequestService {
         await this.logService.create(log);
 
         // for notification
-        this.eventGateway.server.emit('requestLeaveTeam', { from: req.user.id, description  });
+        this.eventGateway.forAdmin({ from: req.user.id, description, type: RequestType[RequestType.LEAVE] });
+        this.eventGateway.forManager(input.to, { from: req.user.id, description, type: RequestType[RequestType.LEAVE] });
+
         return request;         
       } catch(e) {
         // log to mongo
@@ -184,6 +184,20 @@ export class RequestService {
       }
       await this.logService.create(log);
       
+      // for notification
+      this.eventGateway.forAdmin({
+        from: input.from,
+        description: input.description,
+        type: RequestType[RequestType.JOIN],
+        status: RequestStatus[RequestStatus.APPROVE] 
+      });
+      this.eventGateway.forPlayer(input.from, { 
+        from: input.from,
+        description: input.description,
+        type: RequestType[RequestType.JOIN],
+        status: RequestStatus[RequestStatus.APPROVE] 
+      });
+
       return Response.ACCESS_JOIN;
     } catch(e) {
       // log to mongo
@@ -231,6 +245,21 @@ export class RequestService {
         type: LogType.CREATE
       }
       await this.logService.create(log);
+
+      // for notification
+      this.eventGateway.forAdmin({
+        from: input.from,
+        description: input.description,
+        type: RequestType[RequestType.LEAVE],
+        status: RequestStatus[RequestStatus.APPROVE] 
+      });
+      this.eventGateway.forPlayer(input.from, { 
+        from: input.from,
+        description: input.description,
+        type: RequestType[RequestType.LEAVE],
+        status: RequestStatus[RequestStatus.APPROVE] 
+      });
+
       return Response.ACCESS_LEAVE;
     } catch(e) {
       // log to mongo
@@ -310,6 +339,20 @@ export class RequestService {
       throw new HttpException(Response.FAILED, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    // for notification
+    this.eventGateway.forAdmin({
+      from: req.user.id,
+      description: input.description,
+      type: RequestType[RequestType.LEAVE],
+      status: RequestStatus[RequestStatus.APPROVE] 
+    });
+    this.eventGateway.forPlayer(input.player, { 
+      from: req.user.id,
+      description: input.description,
+      type: RequestType[RequestType.LEAVE],
+      status: RequestStatus[RequestStatus.APPROVE] 
+    });
+
     return Response.SUCCESS
   }
 
@@ -340,10 +383,11 @@ export class RequestService {
       }
       await this.logService.create(log);
 
+    // for notification
+      this.eventGateway.forAdmin(request);
+
       return request;
     } catch(e) {
-
-      console.log(e);
       // log to mongo
       const log = {
         message: `faild write into db. ${e}`,

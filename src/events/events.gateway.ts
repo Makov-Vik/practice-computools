@@ -1,7 +1,5 @@
 import { UnauthorizedException } from '@nestjs/common';
 import {
-  MessageBody,
-  SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
@@ -15,6 +13,8 @@ import { ROLE } from 'src/constants';
   },
 })
 export class EventGateway {
+  public socketIdMap: any = {};
+
   constructor(private jwtService: JwtService) {}
 
   @WebSocketServer()
@@ -33,32 +33,35 @@ export class EventGateway {
       user = this.jwtService.verify(token);
     }
     catch(e) {
-      console.log('user disconnected')
-    }
-    
-    if(!user) {
+      console.log('failed verify token');
       socket.disconnect();
     }
-    else {
-
-      console.log('id:', socket.id);
-      socket.emit('connection', 'Successfully connected to server');      
+    
+    if(user.roleId === ROLE.ADMIN) {
+      this.socketIdMap['admin'] = socket.id
     }
+    else if (user.roleId === ROLE.MANAGER) {
+      this.socketIdMap[`manager${user.id}`] = socket.id;
+    }
+    else {
+      this.socketIdMap[`player${user.id}`] = socket.id;
+    };
+
+    console.log('id:', socket.id);
+    socket.emit('connection', 'Successfully connected to server');      
+    
   }
 
-  @SubscribeMessage('forAdmin')
-  async forAdmin(socket: Socket, @MessageBody() data: any): Promise<boolean> {
-    socket.emit('connection', data);
+  forAdmin(data: any) {
+    this.server.to(this.socketIdMap.admin).emit('forAdmin', data);
+  };
 
-    console.log('from event forAdmin', 'data:', data);
-    return true;
-  }
+  forManager(managerId: number, data: any) {
+    this.server.to(this.socketIdMap[`manager${managerId}`]).emit('forManager', data);
+  };
 
-  @SubscribeMessage('connection')
-  findAll(client: Socket, @MessageBody() data: any): boolean {
-    client.emit('connection', data)
-    console.log('from event gateway ', 'data:', data);
-    return true;
-  }
+  forPlayer(playerId: number, data: any) {
+    this.server.to(this.socketIdMap[`player${playerId}`]).emit('forPlayer', data);
+  };
 
 }

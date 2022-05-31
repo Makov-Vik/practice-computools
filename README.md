@@ -36,3 +36,32 @@ Next, should create manager and one team in the postgresql database. This is nec
 So, for this run server with ```npm run start:for-test```, and then run one test with ```jest prepareToTest.spec.ts```.
 
 After successfully passed you should skipped test in **prepareToTest.spec.ts** file and run real test with ```npm run test``` command.
+
+
+### Docker-compose
+To run the code via docker-compose, you need to: 
+1. change in the file **./config/database.json** in the column "host" from *127.0.0.1* to the name of the postgres container(in my code this name *postgres*). Like this:
+```
+  "development": {
+    "username": "postgres",
+    "password": "root",
+    "database": "airsoft",
+    "host": "postgres",
+    "dialect": "postgres"
+  }
+```
+2. also change the host for connecting to the postgresql and mongodb database in the .development.env file to the container names as well. In my case it is:
+```
+POSTGRES_HOST=postgres
+MONGO_URI=mongodb://mongo:27017/airsoft
+```
+
+after these preparations, you can run the following commands:
+```
+docker-compose build
+docker-compose up
+```
+
+*If you want to connect to the pgAdmin server, then while the server is running, you need to go to http://localhost:5050/ , where you enter the email and password that are specified in the docker-compose.yml file on lines 66-67. Next, create a new server, where you specify the host as the container name for postgres (in my case, postgres), username and password, which are indicated on lines 28-29. After that, the database will be available. For more information, you can read the following [article].*
+
+[article]:  https://belowthemalt.com/2021/06/09/run-postgresql-and-pgadmin-in-docker-for-local-development-using-docker-compose/

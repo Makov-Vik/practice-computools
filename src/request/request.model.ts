@@ -4,7 +4,6 @@ import {
   Column,
   DataType,
   ForeignKey,
-  HasOne,
 } from 'sequelize-typescript';
 import { User } from '../user/user.model';
 import { PRIMARY_KEY, RequestStatus } from '../constants';
@@ -31,18 +30,14 @@ export class Request extends Model<Request, CreateRequest> {
   @Column({ type: DataType.INTEGER, allowNull: false })
   to: number;
 
+  @ForeignKey(() => RequestStatusModel.RequestStatus)
   @Column({ type: DataType.INTEGER, defaultValue: RequestStatus.PENDING})
   status: number;
 
+  @ForeignKey(() => RequestType)
   @Column({ type: DataType.INTEGER })
   type: number;
 
   @Column({ type: DataType.STRING })
   description: string;
-
-  @HasOne(() => RequestStatusModel.RequestStatus)
-  requestStatus: RequestStatusModel.RequestStatus[]
-
-  @HasOne(() => RequestType)
-  requestType: RequestType[]
 }

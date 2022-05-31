@@ -3,7 +3,7 @@ import {
   Table,
   Column,
   DataType,
-  ForeignKey,
+  HasOne,
 } from 'sequelize-typescript';
 import { PRIMARY_KEY } from '../constants';
 import { Request } from './request.model';
@@ -13,8 +13,9 @@ export class RequestStatus extends Model<RequestStatus> {
   @Column(PRIMARY_KEY)
   id: number;
 
-  @ForeignKey(() => Request)
   @Column({ type: DataType.STRING })
   status: string;
 
+  @HasOne(() => Request)
+  request: Request[]
 }

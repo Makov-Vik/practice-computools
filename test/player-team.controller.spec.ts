@@ -6,11 +6,21 @@ import * as dotenv from 'dotenv';
 import { generateNewUser } from './generateNewUser';
 dotenv.config({path: `.${env.get('NODE_ENV').required().asString()}.env`});
 import { baseString } from './createRequestString';
+import * as io from 'socket.io-client'
 
 describe('palyer-team', () => {
   let tokenNewPlayer: string;
   let tokenManager: string;
-  
+  let tokenAdmin: string;
+  let countAdminResponse: number = 0;
+  let countManagerResponse: number = 0;
+  let countPlayerResponse: number = 0;
+
+  const admin = {
+    name: env.get('ADMIN_NAME').required().asString(),
+    email: env.get('ADMIN_EMAIL').required().asString(),
+    password: env.get('ADMIN_PASSWORD').required().asString(),
+  };
   const manager = {
     name: env.get('MANAGER_NAME').required().asString(),
     email: env.get('MANAGER_EMAIL').required().asString(),
@@ -34,6 +44,56 @@ describe('palyer-team', () => {
     .body.token;
 
     tokenManager = (await request(`${baseString}`).get('/auth/login').send(manager)).body.token;
+    tokenAdmin = (await request(`${baseString}`).get('/auth/login').send(admin)).body.token;
+
+    const socketAdmin = io.connect('http://localhost:3030', {
+      extraHeaders: {
+        Authorization: `Bearer ${tokenAdmin}`
+      }
+    });
+    const socketManager = io.connect('http://localhost:3030', {
+      extraHeaders: {
+        Authorization: `Bearer ${tokenManager}`
+      }
+    });
+    const socketPlayer = io.connect('http://localhost:3030', {
+      extraHeaders: {
+        Authorization: `Bearer ${tokenNewPlayer}`
+      }
+    });
+
+    socketAdmin.on('connection', function(data) {
+      console.log('connect Admin: ', data);
+    });
+    socketManager.on('connection', function(data) {
+      console.log('connect Manager: ', data);
+    });
+    socketPlayer.on('connection', function(data) {
+      console.log('connect Player: ', data);
+    });
+
+    socketAdmin.on('forAdmin', async function(data) {
+      countAdminResponse++ ;
+      expect(data).toMatchObject({
+        from: expect.any(Number),
+        type: expect.any(String)
+      });
+    });
+    socketPlayer.on('forPlayer', async function(data) {
+      countPlayerResponse++ ;
+      expect(data).toMatchObject({
+        from: expect.any(Number),
+        type: expect.any(String)
+      });
+    });
+    socketManager.on('forManager', async function(data) {
+      countManagerResponse++ ;
+      expect(data).toMatchObject({
+        from: expect.any(Number),
+        type: expect.any(String)
+      });
+    });
+
   }, 10000);
 
   it('create, accept request for join, leave team. get team by name', async () => {
@@ -106,6 +166,9 @@ describe('palyer-team', () => {
     .body;
 
     expect(checkAcceptLeave.teams).toEqual([]);
+    expect(countAdminResponse).not.toBe(0);
+    expect(countManagerResponse).not.toBe(0);
+    expect(countPlayerResponse).not.toBe(0);
   });
 
   it('forced deletion of a user. post /request/delete', async () => {

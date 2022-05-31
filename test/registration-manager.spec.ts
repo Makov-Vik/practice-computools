@@ -6,10 +6,12 @@ import * as dotenv from 'dotenv';
 import { generateNewUser } from './generateNewUser';
 dotenv.config({path: `.${env.get('NODE_ENV').required().asString()}.env`});
 import { baseString } from './createRequestString';
+import * as io from 'socket.io-client'
 
 describe('registration manager', () => {
   let tokenAdmin: string;
-  
+  let countAdminResponse: number = 0;
+
   const admin = {
     name: env.get('ADMIN_NAME').required().asString(),
     email: env.get('ADMIN_EMAIL').required().asString(),
@@ -20,13 +22,32 @@ describe('registration manager', () => {
 
   beforeAll(async function() {
     tokenAdmin = (await request(`${baseString}`).get('/auth/login').send(admin)).body.token;
+    const socketAdmin = io.connect('http://localhost:3030', {
+      extraHeaders: {
+        Authorization: `Bearer ${tokenAdmin}`
+      }
+    });
+
+    socketAdmin.on('connection', function(data) {
+      console.log('connect Admin: ', data);
+    });
+
+    socketAdmin.on('forAdmin', function(data) {
+      countAdminResponse++ ;
+
+      expect(data).toMatchObject({ 
+        from: expect.any(Number),
+        description: expect.any(String),
+        });
+    });
+
   }, 10000);
 
   it('registration manager', async () => {
 
     const registrManager = (await request(`${baseString}`)
     .post('/auth/registrationManager')
-    .send(newManager)).body
+    .send(newManager)).body;
 
     const checkAdminNotification = (await request(`${baseString}`)
     .get('/user/myNotifications')
@@ -42,7 +63,7 @@ describe('registration manager', () => {
     const acceptRegistration = (await request(`${baseString}`)
     .post('/request/acceptRegistration')
     .set('Authorization', `bearer ${tokenAdmin}`)
-    .send({ id: pendingNotification[0].id, from: pendingNotification[0].from, status: 1 }))
+    .send({ id: pendingNotification[pendingNotification.length - 1].id, from: pendingNotification[0].from, status: RequestStatus.APPROVE }))
     .body;
   
     expect(acceptRegistration).toEqual(Response.SUCCESS);
@@ -54,6 +75,8 @@ describe('registration manager', () => {
     expect(tokenManager).toMatchObject({
       token: expect.any(String)
     });
+
+    expect(countAdminResponse).not.toBe(0);
   });
 
 });

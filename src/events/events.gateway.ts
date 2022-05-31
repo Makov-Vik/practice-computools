@@ -51,7 +51,6 @@ export class EventGateway {
         }  
 
       }
-      console.log('id:', socket.id);
       socket.emit('connection', 'Successfully connected to server');
     } catch(e) {
       // log to mongo

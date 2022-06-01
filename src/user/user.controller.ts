@@ -100,4 +100,12 @@ export class UserController {
   ban(@Req() req: Request, @Body() input: BanDto) {
     return this.userService.ban(req, input);
   }
+
+
+  @Get('getManagers')
+  @Role(ROLE[ROLE.ADMIN])
+  @UseGuards(JwtAuthGuard)
+  getAllManagers() {
+    return this.userService.getAllManagers();
+  }
 }

@@ -43,7 +43,7 @@ describe('registration manager', () => {
 
   }, 10000);
 
-  it('registration manager', async () => {
+  it('registration manager. getManagers', async () => {
 
     const registrManager = (await request(`${baseString}`)
     .post('/auth/registrationManager')
@@ -75,6 +75,17 @@ describe('registration manager', () => {
     expect(tokenManager).toMatchObject({
       token: expect.any(String)
     });
+
+    //check get managers
+    const managers = (await request(`${baseString}`)
+    .get('/user/getManagers')
+    .set('Authorization', `bearer ${tokenAdmin}`))
+    .body;
+
+    console.log(managers);
+    expect(managers).toBeDefined();
+    expect(managers).not.toEqual([]);
+
 
     expect(countAdminResponse).not.toBe(0);
   });

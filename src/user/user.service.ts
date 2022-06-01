@@ -331,4 +331,12 @@ export class UserService {
       await this.logService.create(log);  
     }
   }
+
+  async getAllManagers() {
+    const managers = await this.userRepository.findAll({ where: {roleId: ROLE.MANAGER }} );
+    return managers.map( item => {
+      const {id, name, email, roleId, pathPhoto, teams, ban, banReason} = item;
+      return {id, name, email, roleId, pathPhoto, teams, ban, banReason};
+    })
+  }
 }

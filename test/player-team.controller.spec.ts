@@ -9,12 +9,15 @@ import { baseString } from './createRequestString';
 import * as io from 'socket.io-client'
 
 describe('palyer-team', () => {
+  type ResponseEvent = {
+    [key: string]: string
+  };
   let tokenNewPlayer: string;
   let tokenManager: string;
   let tokenAdmin: string;
-  let countAdminResponse: number = 0;
-  let countManagerResponse: number = 0;
-  let countPlayerResponse: number = 0;
+  let arrAdminResponse: Array<ResponseEvent> = [];
+  let arrManagerResponse: Array<ResponseEvent> = [];
+  let arrPlayerResponse: Array<ResponseEvent> = [];
 
   const admin = {
     name: env.get('ADMIN_NAME').required().asString(),
@@ -73,21 +76,21 @@ describe('palyer-team', () => {
     });
 
     socketAdmin.on('forAdmin', async function(data) {
-      countAdminResponse++ ;
+      arrAdminResponse.push(data) ;
       expect(data).toMatchObject({
         from: expect.any(Number),
         type: expect.any(String)
       });
     });
     socketPlayer.on('forPlayer', async function(data) {
-      countPlayerResponse++ ;
+      arrPlayerResponse.push(data) ;
       expect(data).toMatchObject({
         from: expect.any(Number),
         type: expect.any(String)
       });
     });
     socketManager.on('forManager', async function(data) {
-      countManagerResponse++ ;
+      arrManagerResponse.push(data) ;
       expect(data).toMatchObject({
         from: expect.any(Number),
         type: expect.any(String)
@@ -166,9 +169,59 @@ describe('palyer-team', () => {
     .body;
 
     expect(checkAcceptLeave.teams).toEqual([]);
-    expect(countAdminResponse).not.toBe(0);
-    expect(countManagerResponse).not.toBe(0);
-    expect(countPlayerResponse).not.toBe(0);
+
+    expect(arrAdminResponse).toMatchObject([
+      {
+        from: expect.any(Number),
+        description: expect.any(String),
+        type: RequestType[RequestType.JOIN]
+      },
+      {
+        from: expect.any(Number),
+        description: expect.any(String),
+        type: RequestType[RequestType.JOIN],
+        status: RequestStatus[RequestStatus.APPROVE]
+      },
+      {
+        from: expect.any(Number),
+        description: expect.any(String),
+        type: RequestType[RequestType.LEAVE]
+      },
+      {
+        from: expect.any(Number),
+        description: expect.any(String),
+        type: RequestType[RequestType.LEAVE],
+        status: RequestStatus[RequestStatus.APPROVE]
+      }
+    ]);
+
+    expect(arrManagerResponse).toMatchObject([
+      {
+        from: expect.any(Number),
+        description: expect.any(String),
+        type: RequestType[RequestType.JOIN]
+      },
+      {
+        from: expect.any(Number),
+        description: expect.any(String),
+        type: RequestType[RequestType.LEAVE]
+      }
+    ]);
+
+    expect(arrPlayerResponse).toMatchObject([
+      {
+        from: expect.any(Number),
+        description: expect.any(String),
+        type: RequestType[RequestType.JOIN],
+        status: RequestStatus[RequestStatus.APPROVE]
+      },
+      {
+        from: expect.any(Number),
+        description: expect.any(String),
+        type: RequestType[RequestType.LEAVE],
+        status: RequestStatus[RequestStatus.APPROVE]
+      }
+    ]);
   });
 
   it('forced deletion of a user. post /request/delete', async () => {

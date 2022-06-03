@@ -8,8 +8,8 @@ import { JwtService } from '@nestjs/jwt';
 import { LogType, ROLE } from '../constants';
 import { LogService } from '../log/log.service';
 
-type Map = {
-  [key: string]: string
+type SocketIdMap = {
+  [key: string]: Socket['id']
 };
 
 
@@ -20,7 +20,7 @@ type Map = {
 })
 export class EventGateway {
 
-  public socketIdMap: Map = {};
+  public socketIdMap: SocketIdMap = {};
 
   constructor(private jwtService: JwtService, private logService: LogService) {}
 
@@ -36,18 +36,22 @@ export class EventGateway {
       throw new UnauthorizedException({ message: 'user is not authorized' });
     }
     let user;
+    let keyOfMap;
     try {
       user = this.jwtService.verify(token);
 
       switch (user.roleId) {
         case ROLE.ADMIN: {
-          this.socketIdMap['admin'] = socket.id
+          this.socketIdMap['admin'] = socket.id;
+          keyOfMap = 'admin'
         }
         case ROLE.MANAGER: {
-          this.socketIdMap[`manager${user.id}`] = socket.id
+           this.socketIdMap[`manager${user.id}`] = socket.id;
+           keyOfMap = `manager${user.id}`;
         }
         case ROLE.PLAYER: {
-          this.socketIdMap[`player${user.id}`] = socket.id
+          this.socketIdMap[`player${user.id}`] = socket.id;
+          keyOfMap = `player${user.id}`;
         }  
 
       }
@@ -61,6 +65,9 @@ export class EventGateway {
       }
       await this.logService.create(log);
       socket.disconnect();
+
+      delete this.socketIdMap[`${keyOfMap}`];
+      console.log(this.socketIdMap)
     }
   }
 

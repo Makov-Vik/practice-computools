@@ -57,7 +57,6 @@ describe('messages . notifications', () => {
     const { body: [teamDB] } = (await request(`${baseString}`)
     .get('/team')
     .query({ name: `${team.name}` }))
-    //.body[0];
 
     expect(teamDB).toMatchObject({
       "id": expect.any(Number),

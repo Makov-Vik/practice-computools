@@ -62,9 +62,7 @@ docker-compose build
 docker-compose up
 ```
 
-*If you want to connect to the pgAdmin server, then while the server is running, you need to go to http://localhost:5050/ , where you enter the email and password that are specified in the docker-compose.yml file on lines 66-67. Next, create a new server, where you specify the host as the container name for postgres (in my case, postgres), username and password, which are indicated on lines 28-29. After that, the database will be available. For more information, you can read the following [article].*
-
-[article]:  https://belowthemalt.com/2021/06/09/run-postgresql-and-pgadmin-in-docker-for-local-development-using-docker-compose/
+*If you want to connect to the pgAdmin server, then while the server is running, you need to go to http://localhost:5050/ , where you enter the email and password that are specified in the docker-compose.yml file on lines 66-67. Next, create a new server, where you specify the host as the container name for postgres (in my case, postgres), username and password, which are indicated on lines 28-29. After that, the database will be available. For more information, you can read the following [article] (https://belowthemalt.com/2021/06/09/run-postgresql-and-pgadmin-in-docker-for-local-development-using-docker-compose/).*
 
 
 ### Postman

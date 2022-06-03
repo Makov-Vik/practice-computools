@@ -61,12 +61,14 @@ export class UserService {
   }
 
   async getUserByEmailShort(emailInput: string) {
-    const user = await this.userRepository.findOne({ where: { email: emailInput }, include: {all: true} });
+    const user = await this.userRepository.findOne({
+      attributes: ['id', 'name', 'email', 'roleId', 'pathPhoto', 'teams', 'ban', 'banReason'],
+      where: { email: emailInput }, include: {all: true} 
+    });
     if(!user) {
       throw new HttpException(Response.USER_NOT_FOUND, HttpStatus.NOT_FOUND); 
     }
-    const {id, name, roleId, pathPhoto, teams, ban, email} = user;
-    return {id, name, roleId, pathPhoto, teams, ban, email};
+    return user;
   }
 
   async changePassword(input: CreateUserDto, token: string) {
@@ -147,12 +149,14 @@ export class UserService {
   }
 
   async getMe(req: any) {
-    const user = await this.userRepository.findOne({ where: {id: req.user.id}, include: { all: true }} );
+    const user = await this.userRepository.findOne({
+      attributes: ['id', 'name', 'email', 'roleId', 'pathPhoto', 'teams', 'ban', 'banReason'],
+      where: {id: req.user.id}, include: { all: true }
+    });
     if (!user) {
       throw new UnauthorizedException(Response.NOT_AUTHORIZED);
-    }
-    const {id, name, email, roleId, pathPhoto, teams, ban, banReason} = user;
-    return {id, name, email, roleId, pathPhoto, teams, ban, banReason};
+    };
+    return user;
   }
 
   async uploadImage(file: UploadImageDto, req: any) {
@@ -333,10 +337,9 @@ export class UserService {
   }
 
   async getAllManagers() {
-    const managers = await this.userRepository.findAll({ where: {roleId: ROLE.MANAGER }} );
-    return managers.map( item => {
-      const {id, name, email, roleId, pathPhoto, teams, ban, banReason} = item;
-      return {id, name, email, roleId, pathPhoto, teams, ban, banReason};
-    })
+    return await this.userRepository.findAll({ 
+      attributes: ['id', 'name', 'email', 'roleId', 'pathPhoto', 'teams', 'ban', 'banReason'],
+      where: {roleId: ROLE.MANAGER }
+    });
   }
 }

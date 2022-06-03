@@ -544,6 +544,32 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "get managers",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJyb2xlSWQiOjEsInBhdGhQaG90byI6bnVsbCwiYmFuIjpmYWxzZSwiYmFuUmVhc29uIjpudWxsLCJpYXQiOjE2NTQwNzYzODEsImV4cCI6MTY1NDE2Mjc4MX0.tU9mk2dbANymt7bNBauJ1qdQ75cpg9wVjcYRoetN1z8",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3030/user/getManagers",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3030",
+							"path": [
+								"user",
+								"getManagers"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},

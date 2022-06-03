@@ -1,5 +1,5 @@
 import * as request from 'supertest';
-import { RequestStatus } from '../src/constants';
+import { RequestStatus, RequestType } from '../src/constants';
 import * as Response from '../src/response.messages';
 import * as env from 'env-var';
 import * as dotenv from 'dotenv';
@@ -9,8 +9,12 @@ import { baseString } from './createRequestString';
 import * as io from 'socket.io-client'
 
 describe('registration manager', () => {
+  type ResponseEvent = {
+    [key: string]: string
+  };
+
   let tokenAdmin: string;
-  let countAdminResponse: number = 0;
+  let arrAdminResponse: Array<ResponseEvent> = [];
 
   const admin = {
     name: env.get('ADMIN_NAME').required().asString(),
@@ -33,7 +37,7 @@ describe('registration manager', () => {
     });
 
     socketAdmin.on('forAdmin', function(data) {
-      countAdminResponse++ ;
+      arrAdminResponse.push(data) ;
 
       expect(data).toMatchObject({ 
         from: expect.any(Number),
@@ -82,12 +86,30 @@ describe('registration manager', () => {
     .set('Authorization', `bearer ${tokenAdmin}`))
     .body;
 
-    console.log(managers);
     expect(managers).toBeDefined();
     expect(managers).not.toEqual([]);
 
+    expect(arrAdminResponse).toMatchObject([
+      {
+        id: expect.any(Number),
+        type: RequestType.SIGNUP,
+        status: RequestStatus.PENDING,
+        from: expect.any(Number),
+        to: expect.any(Number)
+      }
+    ])
+    // [
+    //   {
+    //     id: 356,
+    //     type: 3,
+    //     status: 3,
+    //     from: 326,
+    //     to: 1,
+    //     description: 'manager registration request from Jada.Littel@hotmail.com',
+    //     updatedAt: '2022-06-03T11:20:04.880Z',
+    //     createdAt: '2022-06-03T11:20:04.880Z'
+    //   }]
 
-    expect(countAdminResponse).not.toBe(0);
   });
 
 });

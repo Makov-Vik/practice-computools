@@ -23,7 +23,7 @@ export class EventGateway {
   public socketIdMap: SocketIdMap = {};
 
   constructor(private jwtService: JwtService, private logService: LogService) {}
-
+  private  keyOfMap: any;
   @WebSocketServer()
   server: Server;
 
@@ -36,26 +36,29 @@ export class EventGateway {
       throw new UnauthorizedException({ message: 'user is not authorized' });
     }
     let user;
-    let keyOfMap;
+
     try {
       user = this.jwtService.verify(token);
 
       switch (user.roleId) {
         case ROLE.ADMIN: {
           this.socketIdMap['admin'] = socket.id;
-          keyOfMap = 'admin'
+          this.keyOfMap = 'admin';
+          break;
         }
         case ROLE.MANAGER: {
            this.socketIdMap[`manager${user.id}`] = socket.id;
-           keyOfMap = `manager${user.id}`;
+           this.keyOfMap = `manager${user.id}`;
+           break;
         }
         case ROLE.PLAYER: {
           this.socketIdMap[`player${user.id}`] = socket.id;
-          keyOfMap = `player${user.id}`;
+          this.keyOfMap = `player${user.id}`;
+          break;
         }  
-
       }
       socket.emit('connection', 'Successfully connected to server');
+      console.log(this.socketIdMap)
     } catch(e) {
       // log to mongo
       const log = {
@@ -65,10 +68,14 @@ export class EventGateway {
       }
       await this.logService.create(log);
       socket.disconnect();
+      delete this.socketIdMap[`${this.keyOfMap}`];
 
-      delete this.socketIdMap[`${keyOfMap}`];
-      console.log(this.socketIdMap)
-    }
+    }      
+  }
+
+  handleDisconnect(socket: Socket){
+    delete this.socketIdMap[`${this.keyOfMap}`];
+    socket.disconnect();
   }
 
   forAdmin(data: any) {

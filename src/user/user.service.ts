@@ -1,7 +1,6 @@
 import { HttpException, HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { ENCODING_SALT, LogType, ROLE } from '../constants';
-import { RoleService } from '../role/role.service';
 import * as Response from '../response.messages';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './user.model';

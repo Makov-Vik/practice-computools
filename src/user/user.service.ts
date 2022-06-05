@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { ENCODING_SALT, LogType, ROLE } from '../constants';
+import { ENCODING_SALT, LogType, requestAttributes, ROLE } from '../constants';
 import * as Response from '../response.messages';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './user.model';
@@ -61,7 +61,7 @@ export class UserService {
 
   async getUserByEmailShort(emailInput: string) {
     const user = await this.userRepository.findOne({
-      attributes: ['id', 'name', 'email', 'roleId', 'pathPhoto', 'teams', 'ban', 'banReason'],
+      attributes: requestAttributes,
       where: { email: emailInput }, include: {all: true} 
     });
     if(!user) {
@@ -149,7 +149,7 @@ export class UserService {
 
   async getMe(req: any) {
     const user = await this.userRepository.findOne({
-      attributes: ['id', 'name', 'email', 'roleId', 'pathPhoto', 'teams', 'ban', 'banReason'],
+     attributes: requestAttributes,
       where: {id: req.user.id}, include: { all: true }
     });
     if (!user) {
@@ -337,7 +337,7 @@ export class UserService {
 
   async getAllManagers() {
     return await this.userRepository.findAll({ 
-      attributes: ['id', 'name', 'email', 'roleId', 'pathPhoto', 'teams', 'ban', 'banReason'],
+      attributes: requestAttributes,
       where: {roleId: ROLE.MANAGER }
     });
   }

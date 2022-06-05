@@ -23,7 +23,6 @@ export class EventGateway {
   public socketIdMap: SocketIdMap = {};
 
   constructor(private jwtService: JwtService, private logService: LogService) {}
-  private  keyOfMap: any;
   @WebSocketServer()
   server: Server;
 
@@ -43,17 +42,14 @@ export class EventGateway {
       switch (user.roleId) {
         case ROLE.ADMIN: {
           this.socketIdMap['admin'] = socket.id;
-          this.keyOfMap = 'admin';
           break;
         }
         case ROLE.MANAGER: {
            this.socketIdMap[`manager${user.id}`] = socket.id;
-           this.keyOfMap = `manager${user.id}`;
            break;
         }
         case ROLE.PLAYER: {
           this.socketIdMap[`player${user.id}`] = socket.id;
-          this.keyOfMap = `player${user.id}`;
           break;
         }  
       }
@@ -67,13 +63,14 @@ export class EventGateway {
       }
       await this.logService.create(log);
       socket.disconnect();
-      delete this.socketIdMap[`${this.keyOfMap}`];
-
+      const keyToDelete = Object.keys(this.socketIdMap).find(key => this.socketIdMap[key] === socket.id);
+      delete this.socketIdMap[`${keyToDelete}`];
     }      
   }
 
   handleDisconnect(socket: Socket){
-    delete this.socketIdMap[`${this.keyOfMap}`];
+    const keyToDelete = Object.keys(this.socketIdMap).find(key => this.socketIdMap[key] === socket.id);
+    delete this.socketIdMap[`${keyToDelete}`];
     socket.disconnect();
   }
 

@@ -14,7 +14,7 @@ describe('registration manager', () => {
   };
 
   let tokenAdmin: string;
-  let arrAdminResponse: Array<ResponseEvent> = [];
+  let arrAdminResponse: ResponseEvent[] = [];
 
   const admin = {
     name: env.get('ADMIN_NAME').required().asString(),
@@ -98,18 +98,6 @@ describe('registration manager', () => {
         to: expect.any(Number)
       }
     ])
-    // [
-    //   {
-    //     id: 356,
-    //     type: 3,
-    //     status: 3,
-    //     from: 326,
-    //     to: 1,
-    //     description: 'manager registration request from Jada.Littel@hotmail.com',
-    //     updatedAt: '2022-06-03T11:20:04.880Z',
-    //     createdAt: '2022-06-03T11:20:04.880Z'
-    //   }]
-
   });
 
 });

@@ -9,15 +9,14 @@ import { baseString } from './createRequestString';
 import * as io from 'socket.io-client'
 
 describe('palyer-team', () => {
-  type ResponseEvent = {
-    [key: string]: string
-  };
+  type ResponseEvent = Record<string, string>
+
   let tokenNewPlayer: string;
   let tokenManager: string;
   let tokenAdmin: string;
-  let arrAdminResponse: Array<ResponseEvent> = [];
-  let arrManagerResponse: Array<ResponseEvent> = [];
-  let arrPlayerResponse: Array<ResponseEvent> = [];
+  let arrAdminResponse: ResponseEvent[] = [];
+  let arrManagerResponse: ResponseEvent[] = [];
+  let arrPlayerResponse: ResponseEvent[] = [];
 
   const admin = {
     name: env.get('ADMIN_NAME').required().asString(),

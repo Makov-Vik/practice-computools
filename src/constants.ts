@@ -41,6 +41,7 @@ const REQUEST_LEAVE = {
   type: RequestType.LEAVE,
   status: RequestStatus.PENDING,
 }
+const requestAttributes = ["id", "name", "email", "roleId", "pathPhoto", "ban", "banReason"]
 
 export {
   PRIMARY_KEY,
@@ -51,4 +52,5 @@ export {
   LogType,
   REQUEST_JOIN,
   REQUEST_LEAVE,
+  requestAttributes
 };

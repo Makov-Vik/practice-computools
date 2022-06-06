@@ -11,7 +11,13 @@ import { LogService } from '../log/log.service';
 type SocketIdMap = {
   [key: string]: Socket['id']
 };
-
+type ResponseData = {
+  from?: number,
+  to?: number,
+  description?: string,
+  type?: string
+  status?: string
+}
 
 @WebSocketGateway({
   cors: {
@@ -74,15 +80,15 @@ export class EventGateway {
     socket.disconnect();
   }
 
-  forAdmin(data: any) {
+  forAdmin(data: ResponseData) {
     this.server.to(this.socketIdMap.admin).emit('forAdmin', data);
   };
 
-  forManager(managerId: number, data: any) {
+  forManager(managerId: number, data: ResponseData) {
     this.server.to(this.socketIdMap[`manager${managerId}`]).emit('forManager', data);
   };
 
-  forPlayer(playerId: number, data: any) {
+  forPlayer(playerId: number, data: ResponseData) {
     this.server.to(this.socketIdMap[`player${playerId}`]).emit('forPlayer', data);
   };
 

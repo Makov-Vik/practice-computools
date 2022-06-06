@@ -15,7 +15,6 @@ import * as dotenv from 'dotenv';
 import * as env from 'env-var';
 import { User } from '../user/user.model';
 import { LogService } from '../log/log.service';
-import { EventGateway } from '../events/events.gateway';
 dotenv.config({path: `.${env.get('NODE_ENV').required().asString()}.env`});
 
 @Injectable()
@@ -31,7 +30,7 @@ export class AuthService {
     if (!user.registered) {
       throw new HttpException(Response.AUTHENTICATED_ERROR, HttpStatus.FORBIDDEN);
     }
-    // log to mongo
+    
     const log = {
       message: `user: ${user.email} was login`,
       where: 'auth.servise.ts (login())',
@@ -54,7 +53,6 @@ export class AuthService {
       password: hashPassword,
     });
 
-    // log to mongo
     const log = {
       message: `user: ${user.email} was registered`,
       where: 'auth.servise.ts (registration())',
@@ -87,7 +85,6 @@ export class AuthService {
     };
     mailer(message);
 
-    // log to mongo
     const log = {
       message: `user: ${user.email} forgot password`,
       where: 'auth.servise.ts (forgotPassword())',

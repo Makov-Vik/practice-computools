@@ -27,7 +27,7 @@ export class UserController {
 
   @Get('/byEmail')
   @UseGuards(JwtAuthGuard)
-  getUserByEmail(@Body() input: any) {
+  getUserByEmail(@Body() input: {"email": string} ) {
     return this.userService.getUserByEmailShort(input.email);
   }
 
@@ -90,8 +90,8 @@ export class UserController {
 
   @Post('cancelRequest')
   @UseGuards(JwtAuthGuard)
-  cancelRequest(@Req() req: Request, @Body() input: RequsetDto) {
-    return this.requestService.cancelRequest(req, input);
+  cancelRequest(@Body() input: RequsetDto) {
+    return this.requestService.cancelRequest(input);
   }
 
   @Patch('ban')

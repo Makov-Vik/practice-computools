@@ -13,7 +13,7 @@ import * as Response from '../response.messages';
 export class ValidationPipe implements PipeTransform {
   async transform(value: any, metadata: ArgumentMetadata): Promise<any> {
     
-    if (!metadata.metatype) { // possible to replace
+    if (!metadata.metatype) {
       throw {};
     }
 

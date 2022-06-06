@@ -51,6 +51,5 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     })
 
     done(null, token);
-    //return token;
   }
 }

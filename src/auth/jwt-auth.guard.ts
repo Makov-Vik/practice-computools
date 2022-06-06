@@ -21,7 +21,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     return super.canActivate(context);
   }
 
-  handleRequest(err: any, user: any, info: any, context: ExecutionContext) {
+  handleRequest(user: any, context: ExecutionContext) {
 
     //check on role
     const requiredRoles = this.reflector.getAllAndOverride<string[]>(ROLE_KEY, [
@@ -33,10 +33,9 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       throw new HttpException(Response.NO_ACCESS, HttpStatus.FORBIDDEN);
     }
 
-      // check ban
-      if (user.ban) {
-        throw new HttpException({ ... Response.BAN, banReason: user.banReason}, HttpStatus.FORBIDDEN)
-      }
+    if (user.ban) {
+      throw new HttpException({ ... Response.BAN, banReason: user.banReason}, HttpStatus.FORBIDDEN)
+    }
 
     return user
   }

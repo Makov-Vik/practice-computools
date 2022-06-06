@@ -16,7 +16,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"person\",\r\n    \"email\": \"person@gmail.com\",\r\n    \"password\": \"1234\"\r\n}",
+							"raw": "{\r\n    \"name\": \"wr\",\r\n    \"email\": \"wrong@gmail.com\",\r\n    \"password\": \"1234\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -273,7 +273,7 @@
 						"header": [
 							{
 								"key": "Authorization",
-								"value": "bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiZW1haWwiOiJ2aWt0b3JrYWt0eXNpa292QGdtYWlsLmNvbSIsInJvbGVJZCI6MywicGF0aFBob3RvIjpudWxsLCJpYXQiOjE2NTE0Nzk0NjgsImV4cCI6MTY1MTU2NTg2OH0.OQq0ics336zYzVFOaRG36Ro0HHqGM8NZyJEti8Fxn7w",
+								"value": "bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NSwiZW1haWwiOiJib2R5QGdtYWlsLmNvbSIsInJvbGVJZCI6MiwicGF0aFBob3RvIjpudWxsLCJiYW4iOmZhbHNlLCJiYW5SZWFzb24iOiIiLCJpYXQiOjE2NTQ1MTc2NTQsImV4cCI6MTY1NDYwNDA1NH0.n1msY3SsCsa9n4RwJPodejKgeZ338j-E8RbXfvdSch4",
 								"type": "text"
 							}
 						],
@@ -325,7 +325,7 @@
 						"header": [
 							{
 								"key": "Authorization",
-								"value": "bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NSwiZW1haWwiOiJzb21lQGdtYWlsLmNvbSIsInJvbGVJZCI6MiwicGF0aFBob3RvIjpudWxsLCJiYW4iOmZhbHNlLCJiYW5SZWFzb24iOiIiLCJpYXQiOjE2NTM5OTEwNzEsImV4cCI6MTY1NDA3NzQ3MX0.nDLihziyPJjx-f4xrp5PlHY3FWEpCG0nAd9ohM-YVgI",
+								"value": "bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NCwiZW1haWwiOiJwbGF5ZXJAZ21haWwuY29tIiwicm9sZUlkIjoyLCJwYXRoUGhvdG8iOm51bGwsImJhbiI6ZmFsc2UsImJhblJlYXNvbiI6IiIsImlhdCI6MTY1NDQxNjkxMiwiZXhwIjoxNjU0NTAzMzEyfQ.wdejMZHhXCg6R8NyeqXNd5Gs3bUMtzG7jbBnk0hvmac",
 								"type": "text"
 							}
 						],
@@ -465,7 +465,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"manager\",\r\n    \"email\": \"manager@gmail.com\",\r\n    \"password\": \"1234\"\r\n}",
+							"raw": "{\r\n    \"name\": \"28\",\r\n    \"email\": \"somemanager28@gmail.com\",\r\n    \"password\": \"1234\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -497,7 +497,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"email\": \"Cyril15@gmail.com\"\r\n}",
+							"raw": "{\r\n    \"email\": \"manager28@gmail.com\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -552,7 +552,7 @@
 						"header": [
 							{
 								"key": "Authorization",
-								"value": "bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJyb2xlSWQiOjEsInBhdGhQaG90byI6bnVsbCwiYmFuIjpmYWxzZSwiYmFuUmVhc29uIjpudWxsLCJpYXQiOjE2NTQwNzYzODEsImV4cCI6MTY1NDE2Mjc4MX0.tU9mk2dbANymt7bNBauJ1qdQ75cpg9wVjcYRoetN1z8",
+								"value": "bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJyb2xlSWQiOjEsInBhdGhQaG90byI6bnVsbCwiYmFuIjpmYWxzZSwiYmFuUmVhc29uIjpudWxsLCJpYXQiOjE2NTQyNTU5NjAsImV4cCI6MTY1NDM0MjM2MH0.FlGhllEN8_9zDf_KMCuGhDHZL2Dw5lLYDlR5dd4gGJo",
 								"type": "text"
 							}
 						],
@@ -721,7 +721,7 @@
 						"header": [
 							{
 								"key": "Authorization",
-								"value": "bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiZW1haWwiOiJtYW5hZ2VyMjhAZ21haWwuY29tIiwicm9sZUlkIjozLCJwYXRoUGhvdG8iOm51bGwsImJhbiI6ZmFsc2UsImJhblJlYXNvbiI6IiIsImlhdCI6MTY1MzY4NDM4MCwiZXhwIjoxNjUzNzcwNzgwfQ.nxf5OtmEiMx7glXfgxJ2WzzehsBih9ll3qXCeSFZHo4",
+								"value": "bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiZW1haWwiOiJtYW5hZ2VyOUBnbWFpbC5jb20iLCJyb2xlSWQiOjMsInBhdGhQaG90byI6bnVsbCwiYmFuIjpmYWxzZSwiYmFuUmVhc29uIjoiIiwiaWF0IjoxNjU0NDE2NzY0LCJleHAiOjE2NTQ1MDMxNjR9.EUz2etX64-6U4LDdEkvj4rVG9_QpvC5BSxodeBgwX9A",
 								"type": "text"
 							}
 						],
@@ -901,13 +901,13 @@
 						"header": [
 							{
 								"key": "Authorization",
-								"value": "bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiZW1haWwiOiJtYW5hZ2VyMjhAZ21haWwuY29tIiwicm9sZUlkIjozLCJwYXRoUGhvdG8iOm51bGwsImJhbiI6ZmFsc2UsImJhblJlYXNvbiI6IiIsImlhdCI6MTY1MzkwMTg3NiwiZXhwIjoxNjUzOTg4Mjc2fQ.NJlfmUwD8lTPk765tMIbumNyEWXC_4W-mxJdXr9CQRQ",
+								"value": "bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiZW1haWwiOiJtYW5hZ2VyOUBnbWFpbC5jb20iLCJyb2xlSWQiOjMsInBhdGhQaG90byI6bnVsbCwiYmFuIjpmYWxzZSwiYmFuUmVhc29uIjoiIiwiaWF0IjoxNjU0NDE2OTg0LCJleHAiOjE2NTQ1MDMzODR9.kNAB3AGlBkoQEusj64laB2sTDNbRSO6bvellIjhSE1g",
 								"type": "text"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"id\": 16,\r\n    \"from\": 2,\r\n    \"description\": \"team: team , player: person@gmail.com\"\r\n}",
+							"raw": "{\r\n    \"id\": 1,\r\n    \"from\": 4,\r\n    \"description\": \"team: team , player: player@gmail.com\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"

@@ -1,7 +1,7 @@
 import {Sequelize_migration} from "../util/inteface";
 import {QueryInterface} from "sequelize";
 
-export const up = async (queryInterface: QueryInterface, Sequelize: Sequelize_migration) => {
+export const up = async (queryInterface: QueryInterface, _Sequelize: Sequelize_migration) => {
   await queryInterface.addConstraint('user', {
     fields: ['teams'],
     type: 'foreign key',

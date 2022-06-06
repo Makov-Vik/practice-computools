@@ -198,7 +198,6 @@ export class UserService {
     try {
       await user.$set('teams', teamsUpdate);
       
-      
       const log = {
       message: `add to team ${team} user ${user.email}`,
       where: 'user.servise.ts (addToTeam())',

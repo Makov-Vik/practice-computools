@@ -165,34 +165,42 @@ export class RequestService {
     }
 
     try {
-      const successAdding = await this.userService.addToTeam(team, input.from);
-      if(!successAdding) {
-        return new HttpException(Response.FAILED_CHANGE_REQ, HttpStatus.INTERNAL_SERVER_ERROR);
-      }
-
-      await this.requestRepository.update({status: RequestStatus.APPROVE}, { where: { id: input.id }})
+      await this.requestRepository.update({status: input.status}, { where: { id: input.id }});
       
-      const log = {
-        message: `accept request join team: ${teamName}, user: ${input.from}`,
-        where: 'request.servise.ts (requestJoinTeam())',
-        type: LogType.CREATE
-      }
-      await this.logService.create(log);
-      
-      this.eventGateway.forAdmin({
-        from: input.from,
-        description: input.description,
-        type: RequestType[RequestType.JOIN],
-        status: RequestStatus[RequestStatus.APPROVE] 
-      });
-      this.eventGateway.forPlayer(input.from, { 
-        from: input.from,
-        description: input.description,
-        type: RequestType[RequestType.JOIN],
-        status: RequestStatus[RequestStatus.APPROVE] 
-      });
+      if (input.status === RequestStatus.DECLINE) {
+        return Response.SUCCESS
+      } 
+      else {
+        //console.log('!!!!!!!!!!!!!!!!!!!')
+        const successAdding = await this.userService.addToTeam(team, input.from);
+        if(!successAdding) {
+          return new HttpException(Response.FAILED_CHANGE_REQ, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        //console.log(successAdding, '??????????????????')
 
-      return Response.ACCESS_JOIN;
+        
+        const log = {
+          message: `accept request join team: ${teamName}, user: ${input.from}`,
+          where: 'request.servise.ts (requestJoinTeam())',
+          type: LogType.CREATE
+        }
+        await this.logService.create(log);
+        
+        this.eventGateway.forAdmin({
+          from: input.from,
+          description: input.description,
+          type: RequestType[RequestType.JOIN],
+          status: RequestStatus[input.status] 
+        });
+        this.eventGateway.forPlayer(input.from, { 
+          from: input.from,
+          description: input.description,
+          type: RequestType[RequestType.JOIN],
+          status: RequestStatus[input.status] 
+        });
+
+        return Response.SUCCESS;
+      }
     } catch(e) {
       
       const log = {
@@ -224,34 +232,39 @@ export class RequestService {
     }
     
     try {
-      const successLeaving = await this.userService.leaveTeam(team, input.from);
-      if(!successLeaving) {
-        return new HttpException(Response.FAILED_CHANGE_REQ, HttpStatus.INTERNAL_SERVER_ERROR);
+      await this.requestRepository.update({status: input.status}, { where: {id: input.id } });
+      
+      if (input.status === RequestStatus.DECLINE) {
+        return Response.SUCCESS
       }
+      else {
+        const successLeaving = await this.userService.leaveTeam(team, input.from);
+        if(!successLeaving) {
+          return new HttpException(Response.FAILED_CHANGE_REQ, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
 
-      await this.requestRepository.update({status: RequestStatus.APPROVE}, { where: {id: input.id } })
+        const log = {
+          message: `accept leave join team: ${teamName}, user: ${input.from}`,
+          where: 'request.servise.ts (acceptLeave())',
+          type: LogType.CREATE
+        }
+        await this.logService.create(log);
 
-      const log = {
-        message: `accept leave join team: ${teamName}, user: ${input.from}`,
-        where: 'request.servise.ts (acceptLeave())',
-        type: LogType.CREATE
+        this.eventGateway.forAdmin({
+          from: input.from,
+          description: input.description,
+          type: RequestType[RequestType.LEAVE],
+          status: RequestStatus[input.status] 
+        });
+        this.eventGateway.forPlayer(input.from, { 
+          from: input.from,
+          description: input.description,
+          type: RequestType[RequestType.LEAVE],
+          status: RequestStatus[input.status] 
+        });
+
+        return Response.SUCCESS;
       }
-      await this.logService.create(log);
-
-      this.eventGateway.forAdmin({
-        from: input.from,
-        description: input.description,
-        type: RequestType[RequestType.LEAVE],
-        status: RequestStatus[RequestStatus.APPROVE] 
-      });
-      this.eventGateway.forPlayer(input.from, { 
-        from: input.from,
-        description: input.description,
-        type: RequestType[RequestType.LEAVE],
-        status: RequestStatus[RequestStatus.APPROVE] 
-      });
-
-      return Response.ACCESS_LEAVE;
     } catch(e) {
       
       const log = {
@@ -260,6 +273,7 @@ export class RequestService {
         type: LogType.ERROR
       }
       await this.logService.create(log);
+      return Response.FAILED
     }
   }
 

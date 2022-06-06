@@ -66,10 +66,8 @@ docker-compose up
 
 
 ### Postman
-Invite group for query collections - [link]
-https://go.postman.co/workspace/My-Workspace~74baf50a-2d24-445a-8d7c-8bd34981896e/collection/629732e5d5f103d9cdfd74cf
+Invite group for query collections - [link](https://go.postman.co/workspace/My-Workspace~74baf50a-2d24-445a-8d7c-8bd34981896e/collection/629732e5d5f103d9cdfd74cf)
 
 
 
-Query collections - [link]
-https://app.getpostman.com/join-team?invite_code=717443a4d288f56cafe7459ef0c5e178&target_code=878d5b663fd3cde2925fb2002aee71ca
+Query collections - [link](https://app.getpostman.com/join-team?invite_code=717443a4d288f56cafe7459ef0c5e178&target_code=878d5b663fd3cde2925fb2002aee71ca)

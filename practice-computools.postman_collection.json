@@ -40,12 +40,15 @@
 				},
 				{
 					"name": "login",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
 					"request": {
-						"method": "POST",
+						"method": "GET",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"Viktor\",\r\n    \"email\": \"viktorkaktysikov@gmail.com\",\r\n    \"password\": \"1234\"\r\n}",
+							"raw": "{\r\n    \"email\": \"manager9@gmail.com\",\r\n    \"password\": \"1234\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -273,7 +276,7 @@
 						"header": [
 							{
 								"key": "Authorization",
-								"value": "bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NSwiZW1haWwiOiJib2R5QGdtYWlsLmNvbSIsInJvbGVJZCI6MiwicGF0aFBob3RvIjpudWxsLCJiYW4iOmZhbHNlLCJiYW5SZWFzb24iOiIiLCJpYXQiOjE2NTQ1MTc2NTQsImV4cCI6MTY1NDYwNDA1NH0.n1msY3SsCsa9n4RwJPodejKgeZ338j-E8RbXfvdSch4",
+								"value": "bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NSwiZW1haWwiOiJib2R5QGdtYWlsLmNvbSIsInJvbGVJZCI6MiwicGF0aFBob3RvIjpudWxsLCJiYW4iOmZhbHNlLCJiYW5SZWFzb24iOiIiLCJpYXQiOjE2NTQ1MjYzNTcsImV4cCI6MTY1NDYxMjc1N30.AeTDkKP0W68G8mYJVLy1L-IaiXqvShWGI3TTJomiPxY",
 								"type": "text"
 							}
 						],
@@ -360,7 +363,7 @@
 						"header": [
 							{
 								"key": "Authorization",
-								"value": "bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiZW1haWwiOiJwZXJzb25AZ21haWwuY29tIiwicm9sZUlkIjoyLCJwYXRoUGhvdG8iOm51bGwsImJhbiI6ZmFsc2UsImJhblJlYXNvbiI6IiIsImlhdCI6MTY1Mzg5NDE4NywiZXhwIjoxNjUzOTgwNTg3fQ.vtC_b8LnffkS1jY0N3hGZ4YoiL0W0z78Taxxb6k4xhw",
+								"value": "bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NSwiZW1haWwiOiJib2R5QGdtYWlsLmNvbSIsInJvbGVJZCI6MiwicGF0aFBob3RvIjpudWxsLCJiYW4iOmZhbHNlLCJiYW5SZWFzb24iOiIiLCJpYXQiOjE2NTQ1MjYzNTcsImV4cCI6MTY1NDYxMjc1N30.AeTDkKP0W68G8mYJVLy1L-IaiXqvShWGI3TTJomiPxY",
 								"type": "text"
 							}
 						],
@@ -901,13 +904,13 @@
 						"header": [
 							{
 								"key": "Authorization",
-								"value": "bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiZW1haWwiOiJtYW5hZ2VyOUBnbWFpbC5jb20iLCJyb2xlSWQiOjMsInBhdGhQaG90byI6bnVsbCwiYmFuIjpmYWxzZSwiYmFuUmVhc29uIjoiIiwiaWF0IjoxNjU0NDE2OTg0LCJleHAiOjE2NTQ1MDMzODR9.kNAB3AGlBkoQEusj64laB2sTDNbRSO6bvellIjhSE1g",
+								"value": "bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiZW1haWwiOiJtYW5hZ2VyOUBnbWFpbC5jb20iLCJyb2xlSWQiOjMsInBhdGhQaG90byI6bnVsbCwiYmFuIjpmYWxzZSwiYmFuUmVhc29uIjoiIiwiaWF0IjoxNjU0NTMwMDA2LCJleHAiOjE2NTQ2MTY0MDZ9.EIwQcP1vgT0JYjpNjkj3ra0LattYlLTUJSxmEXc7grg",
 								"type": "text"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"id\": 1,\r\n    \"from\": 4,\r\n    \"description\": \"team: team , player: player@gmail.com\"\r\n}",
+							"raw": "{\r\n    \"id\": 6,\r\n    \"from\": 5,\r\n    \"description\": \"team: team , player: player@gmail.com\",\r\n    \"status\": 1\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -936,13 +939,13 @@
 						"header": [
 							{
 								"key": "Authorization",
-								"value": "bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiZW1haWwiOiJtYW5hZ2VyMjhAZ21haWwuY29tIiwicm9sZUlkIjozLCJwYXRoUGhvdG8iOm51bGwsImJhbiI6ZmFsc2UsImJhblJlYXNvbiI6IiIsImlhdCI6MTY1MzkwMTg3NiwiZXhwIjoxNjUzOTg4Mjc2fQ.NJlfmUwD8lTPk765tMIbumNyEWXC_4W-mxJdXr9CQRQ",
+								"value": "bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiZW1haWwiOiJtYW5hZ2VyOUBnbWFpbC5jb20iLCJyb2xlSWQiOjMsInBhdGhQaG90byI6bnVsbCwiYmFuIjpmYWxzZSwiYmFuUmVhc29uIjoiIiwiaWF0IjoxNjU0NTMwMDA2LCJleHAiOjE2NTQ2MTY0MDZ9.EIwQcP1vgT0JYjpNjkj3ra0LattYlLTUJSxmEXc7grg",
 								"type": "text"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"id\": 15,\r\n    \"from\": 2,\r\n    \"description\": \"team: team , player: person@gmail.com\"\r\n}",
+							"raw": "{\r\n    \"id\": 7,\r\n    \"from\": 5,\r\n    \"description\": \"team: team , player: body@gmail.com\",\r\n    \"status\": 1\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"

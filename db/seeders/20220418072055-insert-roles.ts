@@ -4,18 +4,18 @@ import { ROLE } from "../../src/constants";
 
 export const up = async (queryInterface: QueryInterface, _Sequelize: Sequelize_migration) => {
     await queryInterface.bulkInsert('role', [{
-      id: ROLE.admin,
-      role: ROLE[ROLE.admin],
+      id: ROLE.ADMIN,
+      role: ROLE[ROLE.ADMIN],
       description: 'head of company'
     },
     {
-      id: ROLE.manager,
-      role: ROLE[ROLE.manager],
+      id: ROLE.MANAGER,
+      role: ROLE[ROLE.MANAGER],
       description: 'master of manage',
     },
     {
-      id: ROLE.player,
-      role: ROLE[ROLE.player],
+      id: ROLE.PLAYER,
+      role: ROLE[ROLE.PLAYER],
       description: 'plays with fire in his heart',
     }]);
   };

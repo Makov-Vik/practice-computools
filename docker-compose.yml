@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  main:
+    container_name: main
+    build:
+      context: .
+    env_file:
+      - .development.env
+    volumes:
+      - .:/app
+      - /app/node_modules
+    ports:
+      - 3030:3030
+    command: npm run start:dev
+    depends_on:
+      - mongo
+      - postgres
+
+    restart: always
+
+  postgres:
+    container_name: local_pgdb
+    image: postgres:12
+    env_file:
+      - .development.env
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      PG_DATA: /var/lib/postgres/data
+    ports:
+      - 5432:5432
+    volumes:
+      - pgdata:/var/lib/postgres/data
+    restart: always
+
+  mongo:
+    image: mongo
+    container_name: mongo
+    env_file:
+      - .development.env 
+    volumes:
+      - mongodb:/data/db:rw
+    ports:
+      - 27017:27017
+
+  migration:
+    build: 
+      context: .
+    command: >
+      sh -c "npx sequelize-cli db:migrate  && npx sequelize-cli db:seed:all"
+    links:
+      - postgres
+    env_file:
+      - .development.env
+    environment:
+      - POSTGRES_HOST=postgres
+    depends_on:
+      - postgres
+
+  pgadmin:
+    container_name: pgadmin4_container
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: root
+    ports:
+      - 5050:80
+    volumes:
+    - pgadmin-data:/var/lib/pgadmin
+
+volumes:
+  pgdata:
+  mongodb:
+  pgadmin-data:

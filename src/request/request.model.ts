@@ -3,12 +3,13 @@ import {
   Table,
   Column,
   DataType,
-  HasMany,
   ForeignKey,
-  BelongsTo,
 } from 'sequelize-typescript';
-import { User } from 'src/user/user.model';
+import { User } from '../user/user.model';
 import { PRIMARY_KEY, RequestStatus } from '../constants';
+import * as RequestStatusModel from './requestStatus.model';
+import { RequestType } from './requestType.model';
+
 interface CreateRequest {
   readonly from: number;
   readonly to: number;
@@ -22,17 +23,19 @@ export class Request extends Model<Request, CreateRequest> {
   id: number;
 
   @ForeignKey(() => User)
-  @Column({ type: DataType.NUMBER, allowNull: false })
+  @Column({ type: DataType.INTEGER, allowNull: false })
   from: number;
 
   @ForeignKey(() => User)
-  @Column({ type: DataType.NUMBER, allowNull: false })
+  @Column({ type: DataType.INTEGER, allowNull: false })
   to: number;
 
-  @Column({ type: DataType.NUMBER, defaultValue: RequestStatus.pending})
+  @ForeignKey(() => RequestStatusModel.RequestStatus)
+  @Column({ type: DataType.INTEGER, defaultValue: RequestStatus.PENDING})
   status: number;
 
-  @Column({ type: DataType.NUMBER })
+  @ForeignKey(() => RequestType)
+  @Column({ type: DataType.INTEGER })
   type: number;
 
   @Column({ type: DataType.STRING })

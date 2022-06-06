@@ -1,18 +1,24 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { UserModule } from 'src/user/user.module';
+import { UserModule } from '../user/user.module';
 import { Request } from './request.model';
 import { RequestService } from './request.service';
 import { RequestController } from './request.controller';
-import { TeamModule } from 'src/team/team.module';
-import { AuthModule } from 'src/auth/auth.module';
+import { TeamModule } from '../team/team.module';
+import { AuthModule } from '../auth/auth.module';
+import { LogModule } from '../log/log.module';
+import { EventModule } from 'src/events/events.module';
+import { RequestType } from './requestType.model';
+import { RequestStatus } from './requestStatus.model';
 
 @Module({
   imports: [
+    forwardRef(() => LogModule),
     forwardRef(() =>UserModule), 
     TeamModule, 
+    EventModule,
     forwardRef(() =>AuthModule),
-    SequelizeModule.forFeature([Request])
+    SequelizeModule.forFeature([Request, RequestType, RequestStatus])
   ],
   providers: [RequestService],
   exports: [RequestService],

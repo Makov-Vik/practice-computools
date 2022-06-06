@@ -1,7 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { SAME_TEAM } from 'src/constants';
-import { User } from 'src/user/user.model';
+import * as Response from '../response.messages';
 import { CreateTeamDto } from './dto/create-team.dto';
 import { Team } from './team.model';
 
@@ -12,7 +11,7 @@ export class TeamService {
   async createTeam(dto: CreateTeamDto, req: any) {
     const candidate = await this.getTeamByName(dto.name)
     if(candidate) {
-      throw new HttpException(SAME_TEAM, HttpStatus.BAD_REQUEST);
+      throw new HttpException(Response.SAME_TEAM, HttpStatus.BAD_REQUEST);
     }
     return await this.teamRepository.create({ ...dto, headManager: req.user.id});
   }

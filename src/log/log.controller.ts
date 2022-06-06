@@ -1,16 +1,15 @@
-import { Body, Controller, Delete, Get, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { Body, Controller, Delete, Get, Post, Query, UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Role } from '../auth/checkRole.decorator';
-import { RoleGuard } from '../auth/role.guard';
 import { LogDto } from './dto/log.dto';
 import { LogInterface } from './log.interface';
 import { LogService } from './log.service';
+import { ROLE } from '../constants';
 
 
 @Controller('log')
+@Role(ROLE[ROLE.ADMIN])
 @UseGuards(JwtAuthGuard)
-@Role('admin')
-@UseGuards(RoleGuard)
 export class LogController {
   constructor(private logService: LogService) {}
 

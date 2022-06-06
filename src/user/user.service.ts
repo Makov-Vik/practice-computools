@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { ENCODING_SALT, FAIL_WRITE_DB, LOG_USER_CREATE, NOT_AUTHORIZED, NOT_FOUND, NO_ACCESS, NO_SUCH_TEAM, ROLE, ROLE_USER_NOT_FOUND, SAME_EMAIL, SUCCESS, USER_NOT_FOUND, WRONG_EMAIL } from '../constants';
-import { RoleService } from '../role/role.service';
+import { ENCODING_SALT, LogType, requestAttributes, ROLE } from '../constants';
+import * as Response from '../response.messages';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './user.model';
 import { JwtService } from '@nestjs/jwt';
@@ -10,40 +10,64 @@ import * as dotenv from 'dotenv';
 import { LogService } from '../log/log.service';
 import { ChangeLoginDto } from './dto/change-login.dto';
 import { UploadImageDto } from './dto/upload-image.dto';
-import { includes } from 'lodash';
-import { Team } from 'src/team/team.model';
+import { Team } from '../team/team.model';
 import { BanDto } from './dto/ban.dto';
-import { where } from 'sequelize/types';
-dotenv.config();
+import * as env from 'env-var';
+dotenv.config({path: `.${env.get('NODE_ENV').required().asString()}.env`});
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectModel(User) private userRepository: typeof User,
-    private roleService: RoleService, private jwtService: JwtService, private logService: LogService
+    private jwtService: JwtService, private logService: LogService
   ) {}
 
   async createUser(dto: CreateUserDto) {
-    const role = await this.roleService.getRoleByValue(ROLE[ROLE.player]);
-    if(!role) {
-      throw new HttpException(ROLE_USER_NOT_FOUND, HttpStatus.NOT_FOUND); 
+    let role;
+    if(dto.registered) {
+      role = ROLE.PLAYER;
     }
-    const dtoWithRole = { ...dto, roleId: role.id, ban: false, banReason: '' };
+    else {
+      role = ROLE.MANAGER;
+    }
+    if(!role) {
+      //log to mongo
+      const log = {
+        message: Response.ROLE_USER_NOT_FOUND.message,
+        where: 'user.servise.ts (createUser())',
+        type: LogType.ERROR
+      }
+      await this.logService.create(log);
+
+      throw new HttpException(Response.ROLE_USER_NOT_FOUND, HttpStatus.NOT_FOUND); 
+    }
+    const dtoWithRole = { ...dto, roleId: role, ban: false, banReason: '' };
 
     // log to mongo
-    const message = LOG_USER_CREATE.message.concat(`${dto.email}`);
+    const message = Response.LOG_USER_CREATE.message.concat(`${dto.email}`);
     const log = {
       message: message,
-      where: 'user.servise.ts',
-      type: 'create'
+      where: 'user.servise.ts (createUser())',
+      type: LogType.CREATE
     }
-    this.logService.create(log);
+    await this.logService.create(log);
     
     return await this.userRepository.create(dtoWithRole);
   }
 
   async getUserByEmail(email: string) {
-    return await this.userRepository.findOne({ where: { email } });
+    return await this.userRepository.findOne({ where: { email }, include: {all: true} });
+  }
+
+  async getUserByEmailShort(emailInput: string) {
+    const user = await this.userRepository.findOne({
+      attributes: requestAttributes,
+      where: { email: emailInput }, include: {all: true} 
+    });
+    if(!user) {
+      throw new HttpException(Response.USER_NOT_FOUND, HttpStatus.NOT_FOUND); 
+    }
+    return user;
   }
 
   async changePassword(input: CreateUserDto, token: string) {
@@ -51,7 +75,15 @@ export class UserService {
     try {
       user = this.jwtService.verify(token);
     } catch {
-      return new HttpException(NOT_FOUND, HttpStatus.NOT_FOUND);
+      // log to mongo
+      const log = {
+        message: `fail verify token`,
+        where: 'user.servise.ts (changePassword())',
+        type: LogType.ERROR
+      }
+      await this.logService.create(log);
+      
+      return new HttpException(Response.NOT_FOUND, HttpStatus.NOT_FOUND);
     }
     const hashPassword = await bcrypt.hash(input.password, ENCODING_SALT);
 
@@ -61,16 +93,22 @@ export class UserService {
       }
     });
 
-    return await this.getUserByEmail(user.email); // may be change return to "chahged success"
+    // log to mongo
+    const log = {
+      message: `user ${user.email} changed password`,
+      where: 'user.servise.ts (changePassword())',
+      type: LogType.UPDATE
+    }
+    await this.logService.create(log);
+
+    return await this.getUserByEmail(user.email); // may be change return to "changed success"
   }
 
   async getUserById(idInput: number) {
     const user = await this.userRepository.findOne({ where: { id: idInput }, include: { all: true } });
     if(!user) {
-      throw new HttpException(USER_NOT_FOUND, HttpStatus.NOT_FOUND); 
+      throw new HttpException(Response.USER_NOT_FOUND, HttpStatus.NOT_FOUND); 
     }
-    //const { id, name, email, pathPhoto, roleId, teams } = user;
-    //return { id, name, email, pathPhoto, roleId, teams }
     return user;
   }
 
@@ -79,61 +117,116 @@ export class UserService {
 
     const candidate = await this.getUserByEmail(input.email);
     if (candidate) {
-      throw new HttpException(SAME_EMAIL, HttpStatus.BAD_REQUEST);
+      throw new HttpException(Response.SAME_EMAIL, HttpStatus.BAD_REQUEST);
     }
 
-    this.userRepository.update({ email: input.email }, {
+    try {
+      this.userRepository.update({ email: input.email }, {
       where: {
         id: user.id
       }
-    });
-    return "successfully modified"
+      });
+    } catch(e) {
+      // log to mongo
+      const log = {
+        message: `faild write into db. ${e}`,
+        where: 'user.servise.ts (changeLogin())',
+        type: LogType.ERROR
+      }
+      await this.logService.create(log);
+    }
+ 
+
+    // log to mongo
+    const log = {
+      message: `user ${user.email} changed password`,
+      where: 'user.servise.ts (changeLogin())',
+      type: LogType.UPDATE
+    }
+    await this.logService.create(log);
+    return Response.SUCCESS
   }
 
   async getMe(req: any) {
-    const user = await this.userRepository.findOne({ where: {id: req.user.id}, include: { all: true }} );
+    const user = await this.userRepository.findOne({
+     attributes: requestAttributes,
+      where: {id: req.user.id}, include: { all: true }
+    });
     if (!user) {
-      throw new UnauthorizedException(NOT_AUTHORIZED);
-    }
-    const {name, email, roleId, pathPhoto, teams, ban, banReason} = user;
-    return {name, email, roleId, pathPhoto, teams, ban, banReason};
+      throw new UnauthorizedException(Response.NOT_AUTHORIZED);
+    };
+    return user;
   }
 
   async uploadImage(file: UploadImageDto, req: any) {
     const user = req.user;
-
-    this.userRepository.update({ pathPhoto: file.filename }, {
-      where: {
-        id: user.id
+    try {
+      this.userRepository.update({ pathPhoto: file.filename }, {
+        where: {
+          id: user.id
+        }
+      });      
+    } catch(e) {
+     // log to mongo
+     const log = {
+      message: `faild update db. ${e}`,
+      where: 'user.servise.ts (uploadImage())',
+      type: LogType.ERROR
       }
-    });
-    return "upload success"
+      await this.logService.create(log);
+      
+      throw new HttpException(Response.FAIL_WRITE_DB, HttpStatus.BAD_REQUEST);
+    }
+
+    return Response.SUCCESS
   }
 
   async getImage(req: any, res: any) {
-    const user = req.user;
+    const user = await this.userRepository.findOne({ where: {id: req.user.id} });
 
-    return await res.sendFile(user.pathPhoto, { root: './images' })
+    return await res.sendFile(user?.pathPhoto, { root: './images' })
   }
 
   async addToTeam(team: Team, userId: number) {
     const user = await this.userRepository.findOne({ where: {id: userId}, include: { all: true }} );
     if(!user) {
-      throw new HttpException(USER_NOT_FOUND, HttpStatus.NOT_FOUND); 
+      throw new HttpException(Response.USER_NOT_FOUND, HttpStatus.NOT_FOUND); 
     }
 
     const teamsUpdate = user.teams;
     teamsUpdate.push(team);
 
+
     // why doesn't work .save() / $add() ????????????????????????????
-    await user.$set('teams', teamsUpdate);
-    return user;
+    try {
+      await user.$set('teams', teamsUpdate);
+      
+      // log to mongo
+      const log = {
+      message: `add to team ${team} user ${user.email}`,
+      where: 'user.servise.ts (addToTeam())',
+      type: LogType.UPDATE
+      }
+      await this.logService.create(log); 
+
+      return true;
+    } catch(e) {
+      // log to mongo
+      const log = {
+      message: `faild update db. ${e}`,
+      where: 'user.servise.ts (addToTeam())',
+      type: LogType.ERROR
+      }
+      await this.logService.create(log);
+ 
+      return false
+    }
   }
 
   async leaveTeam(team: any, userId: number) {
     const user = await this.userRepository.findOne({ where: {id: userId}, include: { all: true }} );
     if(!user) {
-      throw new HttpException(USER_NOT_FOUND, HttpStatus.NOT_FOUND); 
+      throw new HttpException(Response.USER_NOT_FOUND, HttpStatus.NOT_FOUND); 
     }
     
     const teamsUpdate = user.teams;
@@ -142,26 +235,43 @@ export class UserService {
       return item.getDataValue('name') === team.getDataValue('name')
     }));
     if (indexTeam === -1) {
-      throw new HttpException(NO_SUCH_TEAM, HttpStatus.BAD_REQUEST);
+      throw new HttpException(Response.NO_SUCH_TEAM, HttpStatus.BAD_REQUEST);
     }
     teamsUpdate.splice(indexTeam, 1);
 
-    // why doesn't work .save() ????????????????????????????
-    user.$set('teams', teamsUpdate);
-    return user;
+    try {
+      await user.$set('teams', teamsUpdate);
+      // log to mongo
+      const log = {
+        message: `leave from team ${team} user ${user.email}`,
+        where: 'user.servise.ts (addToTeam())',
+        type: LogType.ERROR
+      }
+      await this.logService.create(log);
+
+      return user;
+    } catch(e) {
+      // log to mongo
+      const log = {
+        message: `faild leave team from db. ${e}`,
+        where: 'user.servise.ts (leaveTeam())',
+        type: LogType.ERROR
+        }
+        await this.logService.create(log);  
+    }
   }
 
   async ban(req: any, input: BanDto) {
     const user = await this.userRepository.findByPk(input.userId);
     if(!user) {
-      throw new HttpException(USER_NOT_FOUND, HttpStatus.NOT_FOUND); 
+      throw new HttpException(Response.USER_NOT_FOUND, HttpStatus.NOT_FOUND); 
     }
-    if (user.roleId === ROLE.admin) {
-      throw new HttpException(NO_ACCESS, HttpStatus.FORBIDDEN);
+    if (user.roleId === ROLE.ADMIN) {
+      throw new HttpException(Response.NO_ACCESS, HttpStatus.FORBIDDEN);
     }
 
-    if(req.user.roleId === ROLE.manager && user.roleId === ROLE.manager){
-      throw new HttpException(NO_ACCESS, HttpStatus.FORBIDDEN);
+    if(req.user.roleId === ROLE.MANAGER && user.roleId === ROLE.MANAGER){
+      throw new HttpException(Response.NO_ACCESS, HttpStatus.FORBIDDEN);
     }
 
     user.ban = input.ban;
@@ -169,17 +279,66 @@ export class UserService {
     
     try {
       await user.save(); 
-      return SUCCESS;
+      // log to mongo
+      const log = {
+        message: `user ${user.email} was ban: ${input.ban}`,
+        where: 'user.servise.ts (ban())',
+        type: LogType.UPDATE
+      }
+      await this.logService.create(log);  
+      return Response.SUCCESS;
     } catch (e) {
-      console.log(e);
-      throw new HttpException(FAIL_WRITE_DB, HttpStatus.INTERNAL_SERVER_ERROR)
-    }
-
-
-    
+      // log to mongo
+      const log = {
+      message: `faild write into db ${e}`,
+      where: 'user.servise.ts (ban())',
+      type: LogType.ERROR
+      }
+      await this.logService.create(log);  
+      throw new HttpException(Response.FAIL_WRITE_DB, HttpStatus.INTERNAL_SERVER_ERROR)
+    } 
   }
 
   async acceptRegisteredManager(id: number) {
-    await this.userRepository.update({ registered: true}, { where: { id: id } });
+    try {
+      await this.userRepository.update({ registered: true}, { where: { id: id } });
+      // log to mongo
+      const log = {
+        message: `manager was accept registered`,
+        where: 'user.servise.ts (acceptRegisteredManager())',
+        type: LogType.UPDATE
+        }
+      await this.logService.create(log);  
+    } catch(e) {
+      // log to mongo
+      const log = {
+        message: `faild write into db ${e}`,
+        where: 'user.servise.ts (acceptRegisteredManager())',
+        type: LogType.ERROR
+        }
+      await  this.logService.create(log);  
+    }
+  }
+
+  async getAdmin() {
+    try {
+      const admin = await this.userRepository.findOne({ where: {roleId: ROLE.ADMIN}});
+      return admin
+    } catch(e) {
+      // log to mongo
+      const log = {
+        message: `faild write into db ${e}`,
+        where: 'user.servise.ts (getAdmin())',
+        type: LogType.ERROR
+      }
+      await this.logService.create(log);  
+    }
+  }
+
+  async getAllManagers() {
+    return await this.userRepository.findAll({ 
+      attributes: requestAttributes,
+      where: {roleId: ROLE.MANAGER }
+    });
   }
 }

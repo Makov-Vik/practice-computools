@@ -14,8 +14,8 @@ import { Team } from '../team/team.model';
 import { BanDto } from './dto/ban.dto';
 import * as env from 'env-var';
 dotenv.config({path: `.${env.get('NODE_ENV').required().asString()}.env`});
-import { Request, Response as expressResponse } from 'express';
-
+import { RequestdWithUser } from 'request-type';
+import { Response as EpressResponse} from 'express'
 @Injectable()
 export class UserService {
   constructor(
@@ -113,9 +113,7 @@ export class UserService {
     return user;
   }
 
-  async changeLogin(input: ChangeLoginDto, req: Request) {
-    const objUser = req.user as User;
-
+  async changeLogin(input: ChangeLoginDto, req: RequestdWithUser) {
     const candidate = await this.getUserByEmail(input.email);
     if (candidate) {
       throw new HttpException(Response.SAME_EMAIL, HttpStatus.BAD_REQUEST);
@@ -124,7 +122,7 @@ export class UserService {
     try {
       this.userRepository.update({ email: input.email }, {
       where: {
-        id: objUser.id
+        id: req.user.id
       }
       });
     } catch(e) {
@@ -138,7 +136,7 @@ export class UserService {
     }
  
     const log = {
-      message: `user ${objUser.email} changed password`,
+      message: `user ${req.user.email} changed password`,
       where: 'user.servise.ts (changeLogin())',
       type: LogType.UPDATE
     }
@@ -146,11 +144,10 @@ export class UserService {
     return Response.SUCCESS
   }
 
-  async getMe(req: Request) {
-    const objUser = req.user as User;
+  async getMe(req: RequestdWithUser) {
     const user = await this.userRepository.findOne({
      attributes: requestAttributes,
-      where: {id: objUser.id}, include: { all: true }
+      where: {id: req.user.id}, include: { all: true }
     });
     if (!user) {
       throw new UnauthorizedException(Response.NOT_AUTHORIZED);
@@ -158,12 +155,11 @@ export class UserService {
     return user;
   }
 
-  async uploadImage(file: UploadImageDto, req: Request) {
-    const objUser = req.user as User;
+  async uploadImage(file: UploadImageDto, req: RequestdWithUser) {
     try {
       this.userRepository.update({ pathPhoto: file.filename }, {
         where: {
-          id: objUser.id
+          id: req.user.id
         }
       });      
     } catch(e) {
@@ -181,12 +177,13 @@ export class UserService {
     return Response.SUCCESS
   }
 
-  async getImage(req: Request, res: any) {
-    const objUser = req.user as User;
+  async getImage(req: RequestdWithUser, res: EpressResponse) {
+    const user = await this.userRepository.findOne({ where: {id: req.user.id} });
 
-    const user = await this.userRepository.findOne({ where: {id: objUser.id} });
-
-    return await res.sendFile(user?.pathPhoto, { root: './images' })
+    if (!user?.pathPhoto) {
+      throw {}
+    }
+    return await res.sendFile(user.pathPhoto, { root: './images' })
   }
 
   async addToTeam(team: Team, userId: number) {
@@ -264,9 +261,7 @@ export class UserService {
     }
   }
 
-  async ban(req: Request, input: BanDto) {
-    const objUser = req.user as User;
-
+  async ban(req: RequestdWithUser, input: BanDto) {
     const user = await this.userRepository.findByPk(input.userId);
     if(!user) {
       throw new HttpException(Response.USER_NOT_FOUND, HttpStatus.NOT_FOUND); 
@@ -275,7 +270,7 @@ export class UserService {
       throw new HttpException(Response.NO_ACCESS, HttpStatus.FORBIDDEN);
     }
 
-    if(objUser.roleId === ROLE.MANAGER && user.roleId === ROLE.MANAGER){
+    if(req.user.roleId === ROLE.MANAGER && user.roleId === ROLE.MANAGER){
       throw new HttpException(Response.NO_ACCESS, HttpStatus.FORBIDDEN);
     }
 

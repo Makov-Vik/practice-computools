@@ -32,8 +32,13 @@ export class EventGateway {
   @WebSocketServer()
   server: Server;
 
-  async handleConnection(socket: any) {
+  async handleConnection(socket: Socket) {
     const payload = socket.handshake.headers.authorization;
+
+    if (!payload) {
+      throw {}
+    }
+    
     const bearer = payload.split(' ')[0].toLowerCase();
     const token = payload.split(' ')[1];
 

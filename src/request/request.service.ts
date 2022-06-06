@@ -12,7 +12,7 @@ import { LogService } from '../log/log.service';
 import { User } from '../user/user.model';
 import * as Response from '../response.messages';
 import { EventGateway } from '../events/events.gateway';
-import { Request as expressRequest}  from 'express';
+import { RequestdWithUser } from 'request-type';
 
 @Injectable()
 export class RequestService {
@@ -22,18 +22,15 @@ export class RequestService {
   private logService: LogService,
   private readonly eventGateway: EventGateway) {}
 
-  async getMyNotifications(req: expressRequest) {
-    const objUser = req.user as User;
-    return await this.requestRepository.findAll( { where: {to: objUser.id}})
+  async getMyNotifications(req: RequestdWithUser) {
+    return await this.requestRepository.findAll( { where: {to: req.user.id}})
   }
 
-  async getMyMessages(req: expressRequest) {
-    const objUser = req.user as User;
-    return await this.requestRepository.findAll( { where: {from: objUser.id}})
+  async getMyMessages(req: RequestdWithUser) {
+    return await this.requestRepository.findAll( { where: {from: req.user.id}})
   }
 
-  async requestJoinTeam(req: expressRequest, input: CreateRequsetDto) {
-    const objUser = req.user as User;
+  async requestJoinTeam(req: RequestdWithUser, input: CreateRequsetDto) {
     const team = await this.teamService.getTeamByName(input.team);
     if(!team) {
       throw new HttpException(Response.NO_SUCH_TEAM, HttpStatus.NOT_FOUND);
@@ -50,7 +47,7 @@ export class RequestService {
       throw new HttpException(Response.RECIPIENT_NOT_FOUND, HttpStatus.NOT_FOUND);
     }
 
-    const description =  `team: ${team.name} , player: ${objUser.email}`;
+    const description =  `team: ${team.name} , player: ${req.user.email}`;
 
     const requests = await this.requestRepository.findAll({ where: {
       description: description, status: RequestStatus.PENDING ,type: RequestType.JOIN}
@@ -60,20 +57,20 @@ export class RequestService {
       try {
         const request = await this.requestRepository.create({ 
         ...REQUEST_JOIN,
-        from: objUser.id,
+        from: req.user.id,
         to: input.to,
         description: description,
         });
         
         const log = {
-          message: `request join team user ${objUser.email}`,
+          message: `request join team user ${req.user.email}`,
           where: 'request.servise.ts (requestJoinTeam())',
           type: LogType.CREATE
         }
         await this.logService.create(log);
 
-        this.eventGateway.forAdmin({ from: objUser.id, description, type: RequestType[RequestType.JOIN] });
-        this.eventGateway.forManager(input.to, { from: objUser.id, description, type: RequestType[RequestType.JOIN] });
+        this.eventGateway.forAdmin({ from: req.user.id, description, type: RequestType[RequestType.JOIN] });
+        this.eventGateway.forManager(input.to, { from: req.user.id, description, type: RequestType[RequestType.JOIN] });
 
         return request;
       } catch(e) {
@@ -92,8 +89,7 @@ export class RequestService {
 
   }
 
-  async requestLeaveTeam(req: expressRequest, input: CreateRequsetDto) {
-    const objUser = req.user as User;
+  async requestLeaveTeam(req: RequestdWithUser, input: CreateRequsetDto) {
     const team = await this.teamService.getTeamByName(input.team);
     if(!team) {
       throw new HttpException(Response.NO_SUCH_TEAM, HttpStatus.NOT_FOUND);
@@ -110,7 +106,7 @@ export class RequestService {
       throw new HttpException(Response.RECIPIENT_NOT_FOUND, HttpStatus.NOT_FOUND);
     }
 
-    const description = `team: ${team.name} , player: ${objUser.email}`;
+    const description = `team: ${team.name} , player: ${req.user.email}`;
 
     const requests = await this.requestRepository.findAll({ where: {
       description: description, status: RequestStatus.PENDING, type: RequestType.LEAVE}
@@ -120,20 +116,20 @@ export class RequestService {
       try {
         const request = await this.requestRepository.create({ 
           ...REQUEST_LEAVE,
-          from: objUser.id,
+          from: req.user.id,
           to: input.to,
           description: description,
         });
 
         const log = {
-          message: `request leave team user ${objUser.email}`,
+          message: `request leave team user ${req.user.email}`,
           where: 'request.servise.ts (requestJoinTeam())',
           type: LogType.CREATE
         }
         await this.logService.create(log);
 
-        this.eventGateway.forAdmin({ from: objUser.id, description, type: RequestType[RequestType.LEAVE] });
-        this.eventGateway.forManager(input.to, { from: objUser.id, description, type: RequestType[RequestType.LEAVE] });
+        this.eventGateway.forAdmin({ from: req.user.id, description, type: RequestType[RequestType.LEAVE] });
+        this.eventGateway.forManager(input.to, { from: req.user.id, description, type: RequestType[RequestType.LEAVE] });
 
         return request;         
       } catch(e) {
@@ -304,14 +300,13 @@ export class RequestService {
     return Response.ACCESS_CANCELED;
   }
 
-  async deleteFromTeam(req: expressRequest , input: DeleteFromTeamDto) {
-    const objUser = req.user as User;
+  async deleteFromTeam(req: RequestdWithUser , input: DeleteFromTeamDto) {
     try {
       await this.requestRepository.create({ 
       type: RequestType.LEAVE,
       status: RequestStatus.APPROVE,
-      from: objUser.id,
-      to: objUser.id,
+      from: req.user.id,
+      to: req.user.id,
       description: input.description,
     });
 
@@ -336,13 +331,13 @@ export class RequestService {
     }
 
     this.eventGateway.forAdmin({
-      from: objUser.id,
+      from: req.user.id,
       description: input.description,
       type: RequestType[RequestType.LEAVE],
       status: RequestStatus[RequestStatus.APPROVE] 
     });
     this.eventGateway.forPlayer(input.player, { 
-      from: objUser.id,
+      from: req.user.id,
       description: input.description,
       type: RequestType[RequestType.LEAVE],
       status: RequestStatus[RequestStatus.APPROVE] 

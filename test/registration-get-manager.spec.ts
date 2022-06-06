@@ -7,6 +7,8 @@ import { generateNewUser } from './generateNewUser';
 dotenv.config({path: `.${env.get('NODE_ENV').required().asString()}.env`});
 import { baseString } from './createRequestString';
 import * as io from 'socket.io-client'
+import { Request } from '../src/request/request.model';
+import { DefaultEventsMap } from '@socket.io/component-emitter';
 
 describe('registration manager', () => {
   type ResponseEvent = {
@@ -15,6 +17,7 @@ describe('registration manager', () => {
 
   let tokenAdmin: string;
   let arrAdminResponse: ResponseEvent[] = [];
+  let socketAdmin: io.Socket<DefaultEventsMap, DefaultEventsMap>;
 
   const admin = {
     name: env.get('ADMIN_NAME').required().asString(),
@@ -26,15 +29,13 @@ describe('registration manager', () => {
 
   beforeAll(async function() {
     tokenAdmin = (await request(`${baseString}`).get('/auth/login').send(admin)).body.token;
-    const socketAdmin = io.connect('http://localhost:3030', {
+    socketAdmin = io.connect('http://localhost:3030', {
       extraHeaders: {
         Authorization: `Bearer ${tokenAdmin}`
       }
     });
 
-    socketAdmin.on('connection', function(data) {
-      console.log('connect Admin: ', data);
-    });
+    socketAdmin.on('connection', function(_data) {});
 
     socketAdmin.on('forAdmin', function(data) {
       arrAdminResponse.push(data) ;
@@ -61,7 +62,7 @@ describe('registration manager', () => {
     expect(checkAdminNotification).toBeDefined();
     expect(checkAdminNotification).not.toEqual([]);
 
-    const pendingNotification = checkAdminNotification.filter((item: any) => item.status === RequestStatus.PENDING)
+    const pendingNotification = checkAdminNotification.filter((item: Request) => item.status === RequestStatus.PENDING)
 
 
     const acceptRegistration = (await request(`${baseString}`)
@@ -91,11 +92,11 @@ describe('registration manager', () => {
 
     expect(arrAdminResponse).toMatchObject([
       {
-        id: expect.any(Number),
-        type: RequestType.SIGNUP,
-        status: RequestStatus.PENDING,
+        type: RequestType[RequestType.SIGNUP],
+        status: RequestStatus[RequestStatus.PENDING],
         from: expect.any(Number),
-        to: expect.any(Number)
+        to: expect.any(Number),
+        description: expect.any(String)
       }
     ])
   });

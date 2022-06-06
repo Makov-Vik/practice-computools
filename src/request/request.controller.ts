@@ -4,8 +4,8 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { DeleteFromTeamDto } from './dto/delete-from-team.dto';
 import { Request } from './request.model';
 import { RequestService } from './request.service';
-import * as express from 'express';
 import { ROLE } from '../constants';
+import { RequestdWithUser } from 'request-type';
 
 @Controller('request')
 export class RequestController {
@@ -28,7 +28,7 @@ export class RequestController {
   @Post('delete')
   @Role(ROLE[ROLE.MANAGER], ROLE[ROLE.ADMIN])
   @UseGuards(JwtAuthGuard)
-  deletePlayerFromTeam(@Req() req: express.Request, @Body() input: DeleteFromTeamDto) {
+  deletePlayerFromTeam(@Req() req: RequestdWithUser, @Body() input: DeleteFromTeamDto) {
     return this.requestService.deleteFromTeam(req, input) 
   }
 

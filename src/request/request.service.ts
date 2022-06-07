@@ -12,6 +12,7 @@ import { LogService } from '../log/log.service';
 import { User } from '../user/user.model';
 import * as Response from '../response.messages';
 import { EventGateway } from '../events/events.gateway';
+import { RequestdWithUser } from 'request-type';
 
 @Injectable()
 export class RequestService {
@@ -21,15 +22,15 @@ export class RequestService {
   private logService: LogService,
   private readonly eventGateway: EventGateway) {}
 
-  async getMyNotifications(req: any) {
+  async getMyNotifications(req: RequestdWithUser) {
     return await this.requestRepository.findAll( { where: {to: req.user.id}})
   }
 
-  async getMyMessages(req: any) {
+  async getMyMessages(req: RequestdWithUser) {
     return await this.requestRepository.findAll( { where: {from: req.user.id}})
   }
 
-  async requestJoinTeam(req: any, input: CreateRequsetDto) {
+  async requestJoinTeam(req: RequestdWithUser, input: CreateRequsetDto) {
     const team = await this.teamService.getTeamByName(input.team);
     if(!team) {
       throw new HttpException(Response.NO_SUCH_TEAM, HttpStatus.NOT_FOUND);
@@ -61,7 +62,6 @@ export class RequestService {
         description: description,
         });
         
-        //log to mongo
         const log = {
           message: `request join team user ${req.user.email}`,
           where: 'request.servise.ts (requestJoinTeam())',
@@ -69,13 +69,12 @@ export class RequestService {
         }
         await this.logService.create(log);
 
-        // for notification
         this.eventGateway.forAdmin({ from: req.user.id, description, type: RequestType[RequestType.JOIN] });
         this.eventGateway.forManager(input.to, { from: req.user.id, description, type: RequestType[RequestType.JOIN] });
 
         return request;
       } catch(e) {
-        // log to mongo
+        
         const log = {
           message: `faild write into db. ${e}`,
           where: 'request.servise.ts (requestJoinTeam())',
@@ -90,7 +89,7 @@ export class RequestService {
 
   }
 
-  async requestLeaveTeam(req: any, input: CreateRequsetDto) {
+  async requestLeaveTeam(req: RequestdWithUser, input: CreateRequsetDto) {
     const team = await this.teamService.getTeamByName(input.team);
     if(!team) {
       throw new HttpException(Response.NO_SUCH_TEAM, HttpStatus.NOT_FOUND);
@@ -122,7 +121,6 @@ export class RequestService {
           description: description,
         });
 
-        //log to mongo
         const log = {
           message: `request leave team user ${req.user.email}`,
           where: 'request.servise.ts (requestJoinTeam())',
@@ -130,13 +128,12 @@ export class RequestService {
         }
         await this.logService.create(log);
 
-        // for notification
         this.eventGateway.forAdmin({ from: req.user.id, description, type: RequestType[RequestType.LEAVE] });
         this.eventGateway.forManager(input.to, { from: req.user.id, description, type: RequestType[RequestType.LEAVE] });
 
         return request;         
       } catch(e) {
-        // log to mongo
+        
         const log = {
           message: `faild write into db. ${e}`,
           where: 'request.servise.ts (requestLeaveTeam())',
@@ -167,40 +164,42 @@ export class RequestService {
       throw new HttpException(Response.NO_SUCH_TEAM, HttpStatus.BAD_REQUEST);
     }
 
-    // add team for user
     try {
-      const successAdding = await this.userService.addToTeam(team, input.from);
-      if(!successAdding) {
-        return new HttpException(Response.FAILED_CHANGE_REQ, HttpStatus.INTERNAL_SERVER_ERROR);
-      }
-
-      await this.requestRepository.update({status: RequestStatus.APPROVE}, { where: { id: input.id }})
+      await this.requestRepository.update({status: input.status}, { where: { id: input.id }});
       
-      //log to mongo
-      const log = {
-        message: `accept request join team: ${teamName}, user: ${input.from}`,
-        where: 'request.servise.ts (requestJoinTeam())',
-        type: LogType.CREATE
-      }
-      await this.logService.create(log);
-      
-      // for notification
-      this.eventGateway.forAdmin({
-        from: input.from,
-        description: input.description,
-        type: RequestType[RequestType.JOIN],
-        status: RequestStatus[RequestStatus.APPROVE] 
-      });
-      this.eventGateway.forPlayer(input.from, { 
-        from: input.from,
-        description: input.description,
-        type: RequestType[RequestType.JOIN],
-        status: RequestStatus[RequestStatus.APPROVE] 
-      });
+      if (input.status === RequestStatus.DECLINE) {
+        return Response.SUCCESS
+      } 
+      else {
+        const successAdding = await this.userService.addToTeam(team, input.from);
+        if(!successAdding) {
+          return new HttpException(Response.FAILED_CHANGE_REQ, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
 
-      return Response.ACCESS_JOIN;
+        const log = {
+          message: `accept request join team: ${teamName}, user: ${input.from}`,
+          where: 'request.servise.ts (requestJoinTeam())',
+          type: LogType.CREATE
+        }
+        await this.logService.create(log);
+        
+        this.eventGateway.forAdmin({
+          from: input.from,
+          description: input.description,
+          type: RequestType[RequestType.JOIN],
+          status: RequestStatus[input.status] 
+        });
+        this.eventGateway.forPlayer(input.from, { 
+          from: input.from,
+          description: input.description,
+          type: RequestType[RequestType.JOIN],
+          status: RequestStatus[input.status] 
+        });
+
+        return Response.SUCCESS;
+      }
     } catch(e) {
-      // log to mongo
+      
       const log = {
         message: `failed adding to team user: ${input.from}. ${e}`,
         where: 'request.servise.ts (acceptJoin())',
@@ -230,49 +229,52 @@ export class RequestService {
     }
     
     try {
-      // leave team for user
-      const successLeaving = await this.userService.leaveTeam(team, input.from);
-      if(!successLeaving) {
-        return new HttpException(Response.FAILED_CHANGE_REQ, HttpStatus.INTERNAL_SERVER_ERROR);
+      await this.requestRepository.update({status: input.status}, { where: {id: input.id } });
+      
+      if (input.status === RequestStatus.DECLINE) {
+        return Response.SUCCESS
       }
+      else {
+        const successLeaving = await this.userService.leaveTeam(team, input.from);
+        if(!successLeaving) {
+          return new HttpException(Response.FAILED_CHANGE_REQ, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
 
-      await this.requestRepository.update({status: RequestStatus.APPROVE}, { where: {id: input.id } })
+        const log = {
+          message: `accept leave join team: ${teamName}, user: ${input.from}`,
+          where: 'request.servise.ts (acceptLeave())',
+          type: LogType.CREATE
+        }
+        await this.logService.create(log);
 
-      //log to mongo
-      const log = {
-        message: `accept leave join team: ${teamName}, user: ${input.from}`,
-        where: 'request.servise.ts (acceptLeave())',
-        type: LogType.CREATE
+        this.eventGateway.forAdmin({
+          from: input.from,
+          description: input.description,
+          type: RequestType[RequestType.LEAVE],
+          status: RequestStatus[input.status] 
+        });
+        this.eventGateway.forPlayer(input.from, { 
+          from: input.from,
+          description: input.description,
+          type: RequestType[RequestType.LEAVE],
+          status: RequestStatus[input.status] 
+        });
+
+        return Response.SUCCESS;
       }
-      await this.logService.create(log);
-
-      // for notification
-      this.eventGateway.forAdmin({
-        from: input.from,
-        description: input.description,
-        type: RequestType[RequestType.LEAVE],
-        status: RequestStatus[RequestStatus.APPROVE] 
-      });
-      this.eventGateway.forPlayer(input.from, { 
-        from: input.from,
-        description: input.description,
-        type: RequestType[RequestType.LEAVE],
-        status: RequestStatus[RequestStatus.APPROVE] 
-      });
-
-      return Response.ACCESS_LEAVE;
     } catch(e) {
-      // log to mongo
+      
       const log = {
         message: `failed leaving from team user: ${input.from}. ${e}`,
         where: 'request.servise.ts (acceptLeave())',
         type: LogType.ERROR
       }
       await this.logService.create(log);
+      return Response.FAILED
     }
   }
 
-  async cancelRequest(_req: any, input: RequsetDto) {
+  async cancelRequest(input: RequsetDto) {
 
     const request = await this.requestRepository.findOne({ where: { id: input.id }});
 
@@ -290,7 +292,7 @@ export class RequestService {
     
     try {
       await this.requestRepository.update({status: RequestStatus.CANCELED}, { where: { id: input.id }});
-      //log to mongo
+
       const log = {
         message: `canclede request from id: ${request.from}`,
         where: 'request.servise.ts (cancelRequest())',
@@ -298,7 +300,7 @@ export class RequestService {
       }
       await this.logService.create(log);
     } catch(e) {
-      // log to mongo
+      
       const log = {
         message: `faild write into db. ${e}`,
         where: 'request.servise.ts (cancelRequest())',
@@ -309,7 +311,7 @@ export class RequestService {
     return Response.ACCESS_CANCELED;
   }
 
-  async deleteFromTeam(req: any, input: DeleteFromTeamDto) {
+  async deleteFromTeam(req: RequestdWithUser , input: DeleteFromTeamDto) {
     try {
       await this.requestRepository.create({ 
       type: RequestType.LEAVE,
@@ -321,7 +323,7 @@ export class RequestService {
 
     const team = await this.teamService.getTeamByName(input.team);
     await this.userService.leaveTeam(team, input.player);
-    //log to mongo
+
     const log = {
       message: `leave from team: ${team}, user id: ${input.player}`,
       where: 'request.servise.ts (deleteFromTeam())',
@@ -329,7 +331,7 @@ export class RequestService {
     }
     await this.logService.create(log);
     } catch (e) {
-      // log to mongo
+      
       const log = {
         message: `faild write into db. ${e}`,
         where: 'request.servise.ts (deleteFromTeam())',
@@ -339,7 +341,6 @@ export class RequestService {
       throw new HttpException(Response.FAILED, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    // for notification
     this.eventGateway.forAdmin({
       from: req.user.id,
       description: input.description,
@@ -367,15 +368,16 @@ export class RequestService {
       return new HttpException(Response.RECIPIENT_NOT_FOUND, HttpStatus.NOT_FOUND)
     }
     
-    try {    
-      const request = await this.requestRepository.create({ 
+    try {
+      const request = { 
       type: RequestType.SIGNUP,
       status: RequestStatus.PENDING,
       from: manager.id,
       to: admin.id,
       description: `manager registration request from ${input.email}`,
-      });
-      //log to mongo
+      };
+      const createdRequest = await this.requestRepository.create(request);
+
       const log = {
         message: `manager registration request from: ${manager.id}`,
         where: 'request.servise.ts (reqSignUpManager())',
@@ -383,12 +385,16 @@ export class RequestService {
       }
       await this.logService.create(log);
 
-    // for notification
-      this.eventGateway.forAdmin(request);
 
-      return request;
+      this.eventGateway.forAdmin({
+        ...request,
+        type: RequestType[RequestType.SIGNUP],
+        status: RequestStatus[RequestStatus.PENDING]
+      });
+
+      return createdRequest;
     } catch(e) {
-      // log to mongo
+      
       const log = {
         message: `faild write into db. ${e}`,
         where: 'request.servise.ts (reqSignUpManager())',
@@ -412,7 +418,6 @@ export class RequestService {
         await this.userService.acceptRegisteredManager(request.from)
       }
 
-      //log to mongo
       const log = {
         message: `manager registration request was: ${input.status}`,
         where: 'request.servise.ts (acceptRegistrationManager())',
@@ -422,7 +427,7 @@ export class RequestService {
       
       return Response.SUCCESS
     } catch(e) {
-      // log to mongo
+      
       const log = {
         message: `faild write into db. ${e}`,
         where: 'request.servise.ts (acceptRegistrationManager())',

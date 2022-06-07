@@ -11,9 +11,9 @@ import * as Response from '../response.messages';
 
 @Injectable()
 export class ValidationPipe implements PipeTransform {
-  async transform(value: any, metadata: ArgumentMetadata): Promise<any> {
+  async transform(value: Record<string, string>, metadata: ArgumentMetadata): Promise<Record<string, string>> {
     
-    if (!metadata.metatype) { // possible to replace
+    if (!metadata.metatype) {
       throw {};
     }
 

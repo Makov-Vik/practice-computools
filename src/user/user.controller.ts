@@ -13,8 +13,9 @@ import { RequestService } from '../request/request.service';
 import { RequsetDto } from '../request/dto/request.dto';
 import { BanDto } from './dto/ban.dto';
 import { Role } from '../auth/checkRole.decorator';
-import { Request } from 'express';
+import { Response } from 'express';
 import { ROLE } from '../constants';
+import { RequestdWithUser } from 'request-type';
 
 @Controller('user')
 export class UserController {
@@ -27,19 +28,19 @@ export class UserController {
 
   @Get('/byEmail')
   @UseGuards(JwtAuthGuard)
-  getUserByEmail(@Body() input: any) {
+  getUserByEmail(@Body() input: {"email": string} ) {
     return this.userService.getUserByEmailShort(input.email);
   }
 
   @Patch('changeLogin')
   @UseGuards(JwtAuthGuard)
   @UsePipes(ValidationPipe)
-  changeLogin(@Body() input: ChangeLoginDto, @Req() req: Request) {
+  changeLogin(@Body() input: ChangeLoginDto, @Req() req: RequestdWithUser) {
     return this.userService.changeLogin(input, req);
   }
   @Get('me')
   @UseGuards(JwtAuthGuard)
-  getMe(@Req() req: Request) {
+  getMe(@Req() req: RequestdWithUser) {
     return this.userService.getMe(req);
   }
 
@@ -54,50 +55,50 @@ export class UserController {
       fileFilter: imageFileFilter,
     }),
   )
-  uploadImage(@UploadedFile() file: UploadImageDto, @Req() req: Request) {
+  uploadImage(@UploadedFile() file: UploadImageDto, @Req() req: RequestdWithUser) {
     return this.userService.uploadImage(file, req);
   }
 
   @Get('image')
   @UseGuards(JwtAuthGuard)
-  getImage(@Req() req: Request, @Res() res: any) {
+  getImage(@Req() req: RequestdWithUser, @Res() res: Response) {
     return this.userService.getImage(req, res);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('myNotifications')
-  getMyNotifications(@Req() req: Request) {
+  getMyNotifications(@Req() req: RequestdWithUser) {
     return this.requestService.getMyNotifications(req);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('myMessages')
-  getMyMessages(@Req() req: Request) {
+  getMyMessages(@Req() req: RequestdWithUser) {
     return this.requestService.getMyMessages(req);
   }
 
   @Post('joinTeam')
   @UseGuards(JwtAuthGuard)
-  requestJoinTeam(@Req() req: Request, @Body() input: CreateRequsetDto) {
+  requestJoinTeam(@Req() req: RequestdWithUser, @Body() input: CreateRequsetDto) {
     return this.requestService.requestJoinTeam(req, input);
   }
 
   @Post('leaveTeam')
   @UseGuards(JwtAuthGuard)
-  requestLeaveTeam(@Req() req: Request, @Body() input: CreateRequsetDto) {
+  requestLeaveTeam(@Req() req: RequestdWithUser, @Body() input: CreateRequsetDto) {
     return this.requestService.requestLeaveTeam(req, input);
   }
 
   @Post('cancelRequest')
   @UseGuards(JwtAuthGuard)
-  cancelRequest(@Req() req: Request, @Body() input: RequsetDto) {
-    return this.requestService.cancelRequest(req, input);
+  cancelRequest(@Body() input: RequsetDto) {
+    return this.requestService.cancelRequest(input);
   }
 
   @Patch('ban')
   @Role(ROLE[ROLE.ADMIN], ROLE[ROLE.MANAGER])
   @UseGuards(JwtAuthGuard)
-  ban(@Req() req: Request, @Body() input: BanDto) {
+  ban(@Req() req: RequestdWithUser, @Body() input: BanDto) {
     return this.userService.ban(req, input);
   }
 

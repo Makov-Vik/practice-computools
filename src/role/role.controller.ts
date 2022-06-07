@@ -17,7 +17,7 @@ export class RoleController {
   }
 
   @Get('/all')
-  getAll(@Body() dto: CreateRoleDto) {
+  getAll() {
     return this.roleService.getAllRoles();
   }
 }

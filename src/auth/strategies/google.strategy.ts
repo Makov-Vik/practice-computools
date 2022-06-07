@@ -6,9 +6,14 @@ import { ENCODING_SALT } from '../../constants';
 import { UserService } from '../../user/user.service';
 import { AuthService } from '../auth.service';
 import * as bcrypt from 'bcryptjs';
-
 config();
 
+type Profile = {
+  id: string,
+  name: { familyName: string, givenName: string },
+  emails: { value: string, verified: boolean }[],
+  photos: { value: string }[],
+}
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
 
@@ -21,7 +26,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     });
   }
 
-  async validate (accessToken: string, refreshToken: string, profile: any, done: VerifyCallback): Promise<any> {
+  async validate (accessToken: string, _refreshToken: string, profile: Profile, done: VerifyCallback): Promise<void> {
     const { name, emails, photos } = profile
     const user = {
       email: emails[0].value,
@@ -51,6 +56,5 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     })
 
     done(null, token);
-    //return token;
   }
 }

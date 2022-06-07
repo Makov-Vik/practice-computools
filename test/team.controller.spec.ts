@@ -37,7 +37,7 @@ describe('TeamController', () => {
       id: expect.any(Number),
       ...newTeam,
       updatedAt: expect.any(String),
-      createdAt: expect.any(String)
+      createdAt: expect.any(String),
     });
 
     const getTeambyName = (await request(`${baseString}`)

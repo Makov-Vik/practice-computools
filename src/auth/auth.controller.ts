@@ -16,12 +16,12 @@ export class AuthController {
 
   @Get('/registration/google')
   @UseGuards(AuthGuard('google'))
-  async googleAuth(@Req() req: any) {}
+  async googleAuth(@Req() req: express.Request) {}
 
   @Get('/redirect')
   @UseGuards(AuthGuard('google'))
   googleAuthRedirect(@Req() req: express.Request) {
-    return req.user; // page with returned Login Token
+    return req.user;
   }
 
   @UsePipes(ValidationPipe)

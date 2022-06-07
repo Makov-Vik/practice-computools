@@ -17,7 +17,7 @@ export const up = async (queryInterface: QueryInterface, _Sequelize: Sequelize_m
     }]);
   };
 
-export const down = async (queryInterface: QueryInterface, _Sequelize: any) => {
+export const down = async (queryInterface: QueryInterface, _Sequelize: Sequelize_migration) => {
   queryInterface.bulkDelete('requestType', {})
 }
 

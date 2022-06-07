@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
+import { User } from '../user/user.model';
 import { ROLE } from '../constants';
 import * as Response from '../response.messages';
 import { ROLE_KEY } from './checkRole.decorator';
@@ -21,9 +22,8 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     return super.canActivate(context);
   }
 
-  handleRequest(err: any, user: any, info: any, context: ExecutionContext) {
+  handleRequest(_err: never, user: User, _info: never, context: ExecutionContext) {
 
-    //check on role
     const requiredRoles = this.reflector.getAllAndOverride<string[]>(ROLE_KEY, [
       context.getHandler(),
       context.getClass(),
@@ -33,7 +33,6 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       throw new HttpException(Response.NO_ACCESS, HttpStatus.FORBIDDEN);
     }
 
-      // check ban
       if (user.ban) {
         throw new HttpException({ ... Response.BAN, banReason: user.banReason}, HttpStatus.FORBIDDEN)
       }

@@ -8,10 +8,13 @@ import { JwtService } from '@nestjs/jwt';
 import { LogType, ROLE } from '../constants';
 import { LogService } from '../log/log.service';
 
-type SocketIdMap = {
-  [key: string]: Socket['id']
-};
-
+type ResponseData = {
+  from?: number,
+  to?: number,
+  description?: string,
+  type?: string
+  status?: string
+}
 
 @WebSocketGateway({
   cors: {
@@ -20,14 +23,19 @@ type SocketIdMap = {
 })
 export class EventGateway {
 
-  public socketIdMap: SocketIdMap = {};
+  public socketIdMap: Record<string, string> = {};
 
   constructor(private jwtService: JwtService, private logService: LogService) {}
   @WebSocketServer()
   server: Server;
 
-  async handleConnection(socket: any) {
+  async handleConnection(socket: Socket) {
     const payload = socket.handshake.headers.authorization;
+
+    if (!payload) {
+      throw new UnauthorizedException({ message: 'user is not authorized' });
+    }
+    
     const bearer = payload.split(' ')[0].toLowerCase();
     const token = payload.split(' ')[1];
 
@@ -55,7 +63,6 @@ export class EventGateway {
       }
       socket.emit('connection', 'Successfully connected to server');
     } catch(e) {
-      // log to mongo
       const log = {
         message: `user failed connecting by socket`,
         where: 'events.gateway.ts (handleConnection())',
@@ -74,15 +81,15 @@ export class EventGateway {
     socket.disconnect();
   }
 
-  forAdmin(data: any) {
+  forAdmin(data: ResponseData) {
     this.server.to(this.socketIdMap.admin).emit('forAdmin', data);
   };
 
-  forManager(managerId: number, data: any) {
+  forManager(managerId: number, data: ResponseData) {
     this.server.to(this.socketIdMap[`manager${managerId}`]).emit('forManager', data);
   };
 
-  forPlayer(playerId: number, data: any) {
+  forPlayer(playerId: number, data: ResponseData) {
     this.server.to(this.socketIdMap[`player${playerId}`]).emit('forPlayer', data);
   };
 

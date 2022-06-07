@@ -10,6 +10,7 @@ export const NOT_FOUND = { message: 'page not found'};
 export const USER_NOT_FOUND = { message: 'user not found'};
 export const ROLE_USER_NOT_FOUND = { message: "there isn't user role"};
 export const REQUEST_NOT_FOUND = { message: "there isn't this request"};
+export const IMAGE_NOT_FOUND = { message: "path to image not found"}
 export const NOT_AUTHORIZED = { message: 'user is not authorized' };
 export const RESENDING = { message: 'retry send request' };
 export const REQUEST_CANCELED = { message: 'request has been canceled' };

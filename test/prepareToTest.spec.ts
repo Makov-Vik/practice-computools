@@ -5,6 +5,7 @@ import * as Response from '../src/response.messages';
 import { RequestStatus } from '../src/constants';
 dotenv.config({path: `.${env.get('NODE_ENV').required().asString()}.env`});
 import { baseString } from './createRequestString';
+import { Request } from '../src/request/request.model';
 
 describe.skip('prepare to start test', () => {
   let tokenManager: string;
@@ -45,7 +46,7 @@ describe.skip('prepare to start test', () => {
     expect(checkAdminNotification).toBeDefined();
     expect(checkAdminNotification).not.toEqual([]);
 
-    const pendingNotification = checkAdminNotification.filter((item: any) => item.status === RequestStatus.PENDING)
+    const pendingNotification = checkAdminNotification.filter((item: Request) => item.status === RequestStatus.PENDING)
 
     const acceptRegistration = (await request(`${baseString}`)
     .post('/request/acceptRegistration')

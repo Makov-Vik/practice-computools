@@ -64,9 +64,15 @@ describe('palyer-team', () => {
       }
     });
 
-    socketAdmin.on('connection', function(_data) {});
-    socketManager.on('connection', function(_data) {});
-    socketPlayer.on('connection', function(_data) {});
+    socketAdmin.on('connection', function(data) {
+      console.log('connect Admin: ', data);
+    });
+    socketManager.on('connection', function(data) {
+      console.log('connect Manager: ', data);
+    });
+    socketPlayer.on('connection', function(data) {
+      console.log('connect Player: ', data);
+    });
 
     socketAdmin.on('forAdmin', async function(data) {
       arrAdminResponse.push(data) ;

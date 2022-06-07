@@ -15,7 +15,7 @@ import { BanDto } from './dto/ban.dto';
 import * as env from 'env-var';
 dotenv.config({path: `.${env.get('NODE_ENV').required().asString()}.env`});
 import { RequestdWithUser } from 'request-type';
-import { Response as EpressResponse} from 'express'
+import { Response as ExpressResponse} from 'express'
 @Injectable()
 export class UserService {
   constructor(
@@ -177,13 +177,13 @@ export class UserService {
     return Response.SUCCESS
   }
 
-  async getImage(req: RequestdWithUser, res: EpressResponse) {
+  async getImage(req: RequestdWithUser, res: ExpressResponse) {
     const user = await this.userRepository.findOne({ where: {id: req.user.id} });
 
     if (!user?.pathPhoto) {
-      throw {}
+      throw new HttpException(Response.IMAGE_NOT_FOUND, HttpStatus.NOT_FOUND); 
     }
-    return await res.sendFile(user.pathPhoto, { root: './images' })
+    return res.sendFile(user.pathPhoto, { root: './images' })
   }
 
   async addToTeam(team: Team, userId: number) {

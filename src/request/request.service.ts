@@ -171,14 +171,11 @@ export class RequestService {
         return Response.SUCCESS
       } 
       else {
-        //console.log('!!!!!!!!!!!!!!!!!!!')
         const successAdding = await this.userService.addToTeam(team, input.from);
         if(!successAdding) {
           return new HttpException(Response.FAILED_CHANGE_REQ, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        //console.log(successAdding, '??????????????????')
 
-        
         const log = {
           message: `accept request join team: ${teamName}, user: ${input.from}`,
           where: 'request.servise.ts (requestJoinTeam())',

@@ -8,9 +8,6 @@ import { JwtService } from '@nestjs/jwt';
 import { LogType, ROLE } from '../constants';
 import { LogService } from '../log/log.service';
 
-type SocketIdMap = {
-  [key: string]: Socket['id']
-};
 type ResponseData = {
   from?: number,
   to?: number,
@@ -26,7 +23,7 @@ type ResponseData = {
 })
 export class EventGateway {
 
-  public socketIdMap: SocketIdMap = {};
+  public socketIdMap: Record<string, string> = {};
 
   constructor(private jwtService: JwtService, private logService: LogService) {}
   @WebSocketServer()
@@ -36,7 +33,7 @@ export class EventGateway {
     const payload = socket.handshake.headers.authorization;
 
     if (!payload) {
-      throw {}
+      throw new UnauthorizedException({ message: 'user is not authorized' });
     }
     
     const bearer = payload.split(' ')[0].toLowerCase();
@@ -66,7 +63,6 @@ export class EventGateway {
       }
       socket.emit('connection', 'Successfully connected to server');
     } catch(e) {
-      // log to mongo
       const log = {
         message: `user failed connecting by socket`,
         where: 'events.gateway.ts (handleConnection())',
